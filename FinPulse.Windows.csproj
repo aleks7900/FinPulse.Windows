@@ -6,16 +6,38 @@
     <RootNamespace>FinPulse.Windows</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon Condition="Exists('Assets\AppIcon.ico')">Assets\AppIcon.ico</ApplicationIcon>
+    <Configurations>Debug;Release;StoreRelease</Configurations>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
-    <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml')">win-$(Platform).pubxml</PublishProfile>
+    <PublishProfile Condition="Exists('Properties\PublishProfiles\win-$(Platform).pubxml') and '$(PublishProfile)' == ''">win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
-    <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Default development configuration (Unpackaged) -->
+  <PropertyGroup Condition="'$(Configuration)' != 'StoreRelease' and '$(AppxPackage)' != 'true' and '$(WindowsPackageType)' == ''">
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <!-- Dedicated Microsoft Store / MSIX Release Configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'StoreRelease' or '$(AppxPackage)' == 'true'">
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;RELEASE;STORE_RELEASE</DefineConstants>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxSymbolPackageEnabled>false</AppxSymbolPackageEnabled>
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxPackageDir>bin\StoreRelease\AppPackages\</AppxPackageDir>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <UapAppxPackageBuildMode>StoreUpload</UapAppxPackageBuildMode>
+    <GenerateTestArtifacts>false</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -73,7 +95,7 @@
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'StoreRelease'">False</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug' and '$(Configuration)' != 'StoreRelease'">True</PublishTrimmed>
   </PropertyGroup>
 </Project>
