@@ -1,0 +1,121 @@
+<ContentDialog
+    x:Class="FinPulse.Windows.Views.QuickAddDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:FinPulse.Windows.Models"
+    xmlns:vm="using:FinPulse.Windows.ViewModels"
+    Title="Add Transaction"
+    PrimaryButtonText="Save Transaction"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="16" Width="440" Padding="0,8,0,0">
+
+        <!-- Error Message InfoBar -->
+        <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Severity="Error" Title="Error"
+                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+        <!-- Amount and Type Segmented Control -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="3*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="AmountTextBox" Header="Amount" PlaceholderText="0.00"
+                     Text="{x:Bind AmountString, Mode=TwoWay}"
+                     KeyDown="AmountTextBox_KeyDown">
+                <TextBox.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="Amount" FontWeight="SemiBold" FontSize="13" />
+                    </DataTemplate>
+                </TextBox.HeaderTemplate>
+            </TextBox>
+
+            <ComboBox Header="Transaction Type" Grid.Column="1" HorizontalAlignment="Stretch"
+                      SelectedIndex="{x:Bind SelectedTypeIndex, Mode=TwoWay}">
+                <ComboBoxItem Content="Expense" />
+                <ComboBoxItem Content="Income" />
+                <ComboBoxItem Content="Transfer" />
+            </ComboBox>
+        </Grid>
+
+        <!-- Accounts (Source & Destination) -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Header="Source Account" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.Accounts, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedSourceAccount, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:Account">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="{x:Bind GlyphIcon}" FontSize="12" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <ComboBox Header="Destination Account" Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.Accounts, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedDestinationAccount, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsTransfer, Mode=OneWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:Account">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="{x:Bind GlyphIcon}" FontSize="12" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+
+        <!-- Category & Merchant -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ComboBox Header="Category" HorizontalAlignment="Stretch"
+                      ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:Category">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="12" Height="12" CornerRadius="3"
+                                    Background="{x:Bind ColorHex, Converter={StaticResource HexColorToBrushConverter}}" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBox Header="Merchant / Payee" Grid.Column="1" PlaceholderText="e.g. Spotify, Apple, Shell"
+                     Text="{x:Bind ViewModel.Merchant, Mode=TwoWay}" />
+        </Grid>
+
+        <!-- Description & Date -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Header="Description / Notes" PlaceholderText="Optional details"
+                     Text="{x:Bind ViewModel.Description, Mode=TwoWay}" />
+
+            <DatePicker Header="Date" Grid.Column="1" HorizontalAlignment="Stretch"
+                        Date="{x:Bind ViewModel.TransactionDate, Mode=TwoWay}" />
+        </Grid>
+
+    </StackPanel>
+</ContentDialog>

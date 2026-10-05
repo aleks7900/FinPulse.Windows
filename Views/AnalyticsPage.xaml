@@ -1,0 +1,145 @@
+<Page
+    x:Class="FinPulse.Windows.Views.AnalyticsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:FinPulse.Windows.Models"
+    xmlns:vm="using:FinPulse.Windows.ViewModels"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="24" Padding="28,24,28,36">
+
+            <!-- Header Row with Period Selector -->
+            <Grid>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Financial Analytics" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                    <TextBlock Text="Spending patterns, category distributions, and multi-period metrics" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                </StackPanel>
+
+                <ComboBox HorizontalAlignment="Right" VerticalAlignment="Center" Width="150"
+                          SelectedValue="{x:Bind ViewModel.SelectedPeriod, Mode=TwoWay}"
+                          SelectedValuePath="Content">
+                    <ComboBoxItem Content="7 Days" />
+                    <ComboBoxItem Content="30 Days" IsSelected="True" />
+                    <ComboBoxItem Content="3 Months" />
+                    <ComboBoxItem Content="6 Months" />
+                    <ComboBoxItem Content="1 Year" />
+                </ComboBox>
+            </Grid>
+
+            <!-- Metrics Strip -->
+            <Grid ColumnSpacing="16" RowSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="PERIOD INCOME" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.PeriodIncomeString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulsePrimaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="PERIOD EXPENSES" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.PeriodExpenseString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseNegativeBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="SAVINGS RATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.SavingsRate, Mode=OneWay, Converter={StaticResource RatioToPercentStringConverter}}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseAccentBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="DAILY BURN RATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.AverageDailyBurnString, Mode=OneWay}" FontSize="24" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Two-Column Analytics Layout -->
+            <Grid ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: Spending By Category Breakdown -->
+                <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Spending by Category" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.CategoryBreakdown, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CategorySpendItem">
+                                    <StackPanel Spacing="6" Margin="0,6">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Width="12" Height="12" CornerRadius="3"
+                                                        Background="{x:Bind HexColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                                                <TextBlock Text="{x:Bind CategoryName}" FontWeight="SemiBold" FontSize="13" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                                <TextBlock Text="{x:Bind FormattedAmount}" FontWeight="Bold" FontSize="13" />
+                                                <TextBlock Text="{x:Bind FormattedPercentage}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Width="45" TextAlignment="Right" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <ProgressBar Value="{x:Bind Percentage}" Maximum="100" Height="6" CornerRadius="3"
+                                                     Foreground="{x:Bind HexColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right Column: Monthly Historical Trend -->
+                <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Monthly Spending &amp; Income Trend" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.MonthlyTrends, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MonthlyTrendItem">
+                                    <Border Style="{StaticResource StatCardBorder}" Margin="0,4">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="120" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" Text="{x:Bind PeriodLabel}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                                <ProgressBar Value="{x:Bind IncomePercent}" Maximum="100" Height="6" CornerRadius="3" Foreground="{StaticResource FinPulsePrimaryBrush}" />
+                                                <ProgressBar Value="{x:Bind ExpensePercent}" Maximum="100" Height="6" CornerRadius="3" Foreground="{StaticResource FinPulseNegativeBrush}" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock Text="{x:Bind FormattedNet}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Right" />
+                                                <TextBlock Text="Net Variance" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

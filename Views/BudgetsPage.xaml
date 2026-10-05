@@ -1,0 +1,114 @@
+<Page
+    x:Class="FinPulse.Windows.Views.BudgetsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:FinPulse.Windows.Models"
+    xmlns:vm="using:FinPulse.Windows.ViewModels"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="24" Padding="28,24,28,36">
+
+            <!-- Page Header -->
+            <Grid>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Budget Management" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                    <TextBlock Text="Track category spending limits and monitor pacing progress" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                </StackPanel>
+
+                <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="AddBudgetButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE710;" FontSize="14" />
+                        <TextBlock Text="New Budget" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Budget Summary Cards Strip -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="TOTAL BUDGET LIMIT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.TotalBudgetLimitString, Mode=OneWay}" FontSize="24" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="TOTAL SPENT MTD" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.TotalBudgetSpentString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseNegativeBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource FluentCardBorder}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="REMAINING BUFFER" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.TotalBudgetRemainingString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulsePrimaryBrush}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Budgets Grid / List -->
+            <Border Style="{StaticResource FluentCardBorder}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Active Budgets" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Budgets, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:Budget">
+                                <Border Style="{StaticResource StatCardBorder}" Margin="0,6" Padding="16">
+                                    <StackPanel Spacing="10">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{x:Bind Name}" FontWeight="Bold" FontSize="15" />
+                                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="6,2" CornerRadius="4">
+                                                    <TextBlock Text="{x:Bind CategoryName}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </Border>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                                <TextBlock FontSize="14">
+                                                    <Run Text="{x:Bind FormattedSpent}" FontWeight="Bold" />
+                                                    <Run Text=" / " Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                    <Run Text="{x:Bind FormattedEffectiveLimit}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </TextBlock>
+                                                <Button Click="DeleteBudget_Click" Tag="{x:Bind Id}" Background="Transparent" BorderThickness="0" Padding="4">
+                                                    <FontIcon Glyph="&#xE74D;" FontSize="12" Foreground="{StaticResource FinPulseNegativeBrush}" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <ProgressBar Value="{x:Bind ConsumedPercentInt}" Maximum="100" Height="8" CornerRadius="4"
+                                                     Foreground="{x:Bind StatusColor, Converter={StaticResource HexColorToBrushConverter}}" />
+
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Bind ConsumedPercentString}" FontWeight="Bold" FontSize="12" Foreground="{x:Bind StatusColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                                                <TextBlock Text="•" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                <TextBlock Text="{x:Bind StatusText}" FontSize="12" FontWeight="SemiBold" Foreground="{x:Bind StatusColor, Converter={StaticResource HexColorToBrushConverter}}" />
+                                            </StackPanel>
+
+                                            <TextBlock HorizontalAlignment="Right" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{x:Bind FormattedRemaining}" FontWeight="SemiBold" />
+                                                <Run Text=" remaining" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

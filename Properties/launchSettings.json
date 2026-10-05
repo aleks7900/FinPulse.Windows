@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FinPulse.Windows (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "FinPulse.Windows (Package)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

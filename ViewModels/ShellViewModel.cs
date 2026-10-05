@@ -1,0 +1,49 @@
+using System;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
+using FinPulse.Windows.Services;
+
+namespace FinPulse.Windows.ViewModels;
+
+public class ShellViewModel : ViewModelBase
+{
+    private readonly ISyncService _syncService;
+    private readonly IAuthService _authService;
+
+    private string _currentNavTag = "overview";
+    public string CurrentNavTag
+    {
+        get => _currentNavTag;
+        set => SetProperty(ref _currentNavTag, value);
+    }
+
+    private string _syncStatusBadge = "Sync: OK";
+    public string SyncStatusBadge
+    {
+        get => _syncStatusBadge;
+        set => SetProperty(ref _syncStatusBadge, value);
+    }
+
+    public IAsyncRelayCommand SyncNowCommand { get; }
+
+    public ShellViewModel(ISyncService syncService, IAuthService authService)
+    {
+        _syncService = syncService;
+        _authService = authService;
+
+        SyncNowCommand = new AsyncRelayCommand(async () =>
+        {
+            await _syncService.PerformFullSyncAsync();
+        });
+
+        _syncService.SyncStatusChanged += (s, status) =>
+        {
+            SyncStatusBadge = status switch
+            {
+                SyncStatus.SYNCING => "Syncing...",
+                SyncStatus.ERROR => "Sync Error",
+                _ => "Sync: OK"
+            };
+        };
+    }
+}
