@@ -55,7 +55,18 @@ public partial class App : Application
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        RootWindow = new MainWindow();
+        string? initialTag = null;
+        string[] cmdArgs = Environment.GetCommandLineArgs();
+        for (int i = 0; i < cmdArgs.Length; i++)
+        {
+            if (cmdArgs[i] == "--page" && i + 1 < cmdArgs.Length)
+            {
+                initialTag = cmdArgs[i + 1];
+                break;
+            }
+        }
+
+        RootWindow = new MainWindow(initialTag);
         RootWindow.Activate();
 
         _ = InitializeServicesAsync();

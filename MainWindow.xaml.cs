@@ -16,7 +16,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly ShellViewModel _viewModel;
 
-    public MainWindow()
+    public MainWindow(string? initialTag = null)
     {
         InitializeComponent();
 
@@ -30,7 +30,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1240, 820));
 
         // Initial navigation
-        NavFrame.Navigate(typeof(OverviewPage));
+        NavigateToTag(!string.IsNullOrWhiteSpace(initialTag) ? initialTag : "overview");
     }
 
     private void TitleBar_PaneToggleRequested(TitleBar sender, object args)

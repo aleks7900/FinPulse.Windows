@@ -14,7 +14,10 @@ public class UserSession
     public long ExpiresAt { get; set; }
     public bool IsAnonymous { get; set; }
 
-    public bool IsAuthenticated => !string.IsNullOrEmpty(Uid);
+    public string? ProviderId { get; set; } = "firebase";
+
+    public bool IsGoogleUser => ProviderId == "google.com" || (Email != null && Email.EndsWith("@gmail.com", StringComparison.OrdinalIgnoreCase));
+    public bool IsAuthenticated => !string.IsNullOrWhiteSpace(Uid) && Uid != "local_default_user";
 }
 
 public interface IAuthService
@@ -25,10 +28,12 @@ public interface IAuthService
     event EventHandler<UserSession?>? AuthStateChanged;
 
     Task InitializeAsync();
+    Task<UserSession> SignInWithGoogleAsync();
+    Task<UserSession> SignInWithGoogleTokenAsync(string idToken);
+    Task<UserSession> SignInWithGoogleAccountAsync(string email, string? displayName = null, string? photoUrl = null);
     Task<UserSession> SignInWithEmailPasswordAsync(string email, string password);
     Task<UserSession> SignUpWithEmailPasswordAsync(string email, string password);
     Task<UserSession> SignInAnonymouslyAsync();
-    Task<UserSession> SignInWithGoogleTokenAsync(string idToken);
     Task<UserSession> UseDemoAccountAsync();
     Task SignOutAsync();
     Task<string?> GetValidTokenAsync();

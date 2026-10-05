@@ -5,6 +5,7 @@
 
     <converters:MoneyFormatConverter x:Key="MoneyFormatConverter" />
     <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <converters:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" Invert="True" />
     <converters:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
     <converters:RatioToPercentStringConverter x:Key="RatioToPercentStringConverter" />
 

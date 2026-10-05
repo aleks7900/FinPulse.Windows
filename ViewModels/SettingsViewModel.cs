@@ -81,14 +81,23 @@ public class SettingsViewModel : ViewModelBase
     public UserSession? CurrentUser
     {
         get => _currentUser;
-        set => SetProperty(ref _currentUser, value);
+        set
+        {
+            if (SetProperty(ref _currentUser, value))
+            {
+                OnPropertyChanged(nameof(IsLoggedIn));
+                OnPropertyChanged(nameof(IsNotLoggedIn));
+            }
+        }
     }
 
-    public bool IsLoggedIn => CurrentUser != null && !string.IsNullOrWhiteSpace(CurrentUser.Uid);
+    public bool IsLoggedIn => CurrentUser != null && !string.IsNullOrWhiteSpace(CurrentUser.Uid) && CurrentUser.Uid != "local_default_user";
+    public bool IsNotLoggedIn => !IsLoggedIn;
 
     public IAsyncRelayCommand SyncNowCommand { get; }
     public IAsyncRelayCommand SignOutCommand { get; }
     public IAsyncRelayCommand ClearCloudCommand { get; }
+    public IAsyncRelayCommand SignInGoogleCommand { get; }
 
     public SettingsViewModel(ILocalDataStore store, ISyncService syncService, IAuthService authService)
     {
@@ -99,12 +108,14 @@ public class SettingsViewModel : ViewModelBase
         SyncNowCommand = new AsyncRelayCommand(PerformSyncAsync);
         SignOutCommand = new AsyncRelayCommand(SignOutAsync);
         ClearCloudCommand = new AsyncRelayCommand(ClearCloudDataAsync);
+        SignInGoogleCommand = new AsyncRelayCommand(SignInGoogleAsync);
 
         _syncService.SyncStatusChanged += (s, status) => UpdateSyncStatus();
         _authService.AuthStateChanged += (s, user) =>
         {
             CurrentUser = user;
             OnPropertyChanged(nameof(IsLoggedIn));
+            OnPropertyChanged(nameof(IsNotLoggedIn));
         };
     }
 
@@ -190,9 +201,70 @@ public class SettingsViewModel : ViewModelBase
         await _store.SaveSettingsAsync(settings);
     }
 
+    public async Task SignInGoogleAsync()
+    {
+        IsBusy = true;
+        BusyMessage = "Signing in with Google Account...";
+        try
+        {
+            await _authService.SignInWithGoogleAsync();
+            await PerformSyncAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Google Sign-In failed: {ex}");
+        }
+        finally
+        {
+            IsBusy = false;
+            BusyMessage = null;
+        }
+    }
+
+    public async Task SignInGoogleAccountAsync(string email, string? displayName = null)
+    {
+        IsBusy = true;
+        BusyMessage = "Connecting Google Account...";
+        try
+        {
+            await _authService.SignInWithGoogleAccountAsync(email, displayName);
+            await PerformSyncAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Google Sign-In failed: {ex}");
+        }
+        finally
+        {
+            IsBusy = false;
+            BusyMessage = null;
+        }
+    }
+
+    public async Task SignInGoogleTokenAsync(string idToken)
+    {
+        IsBusy = true;
+        BusyMessage = "Authenticating Google ID Token...";
+        try
+        {
+            await _authService.SignInWithGoogleTokenAsync(idToken);
+            await PerformSyncAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Google Token Sign-In failed: {ex}");
+        }
+        finally
+        {
+            IsBusy = false;
+            BusyMessage = null;
+        }
+    }
+
     public async Task SignInEmailAsync(string email, string password)
     {
         IsBusy = true;
+        BusyMessage = "Signing in with FinPulse Account...";
         try
         {
             await _authService.SignInWithEmailPasswordAsync(email, password);
@@ -201,20 +273,7 @@ public class SettingsViewModel : ViewModelBase
         finally
         {
             IsBusy = false;
-        }
-    }
-
-    public async Task SignInDemoAsync()
-    {
-        IsBusy = true;
-        try
-        {
-            await _authService.UseDemoAccountAsync();
-            await PerformSyncAsync();
-        }
-        finally
-        {
-            IsBusy = false;
+            BusyMessage = null;
         }
     }
 
@@ -223,6 +282,8 @@ public class SettingsViewModel : ViewModelBase
         await _authService.SignOutAsync();
         CurrentUser = null;
         OnPropertyChanged(nameof(IsLoggedIn));
+        OnPropertyChanged(nameof(IsNotLoggedIn));
+        UpdateSyncStatus();
     }
 
     private async Task ClearCloudDataAsync()
