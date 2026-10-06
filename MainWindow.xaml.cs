@@ -77,13 +77,6 @@ public sealed partial class MainWindow : Window
         {
             settingsItem.Content = loc.GetString("Nav_Settings.Content", "Settings");
         }
-
-        // Refresh current page if loaded
-        if (NavFrame.CurrentSourcePageType != null)
-        {
-            var curType = NavFrame.CurrentSourcePageType;
-            NavFrame.Navigate(curType);
-        }
     }
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)

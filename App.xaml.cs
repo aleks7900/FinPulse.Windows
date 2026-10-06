@@ -106,7 +106,8 @@ public partial class App : Application
             {
                 string json = System.IO.File.ReadAllText(settingsPath);
                 using var doc = System.Text.Json.JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("selectedLanguage", out var langProp))
+                if (doc.RootElement.TryGetProperty("selectedLanguage", out var langProp) ||
+                    doc.RootElement.TryGetProperty("SelectedLanguage", out langProp))
                 {
                     string? lang = langProp.GetString();
                     if (!string.IsNullOrEmpty(lang))
@@ -142,6 +143,12 @@ public partial class App : Application
             await authService.InitializeAsync();
             LogDiagnostic("InitializeServicesAsync: initializing localStore");
             await localStore.InitializeAsync();
+            var settings = await localStore.GetSettingsAsync();
+            if (!string.IsNullOrEmpty(settings?.SelectedLanguage) && settings.SelectedLanguage != LocalizationService.Current.CurrentLanguage)
+            {
+                var loc = Services.GetRequiredService<ILocalizationService>();
+                loc.ApplyLanguage(settings.SelectedLanguage);
+            }
             LogDiagnostic("InitializeServicesAsync: initializing syncCoordinator");
             await syncCoordinator.InitializeAsync();
 

@@ -62,13 +62,21 @@ public class SettingsViewModel : ViewModelBase
 
     public string ConnectedAccountEmail => CurrentUser?.Email ?? LocalizationService.Current.GetString("Settings_NotSignedIn", "Not Signed In");
 
+    private bool _isSuppressingUpdates;
+
     private CurrencyMetadata? _selectedCurrency;
     public CurrencyMetadata? SelectedCurrency
     {
         get => _selectedCurrency;
         set
         {
-            if (SetProperty(ref _selectedCurrency, value) && value != null)
+            if (value == null) return;
+            if (_isSuppressingUpdates)
+            {
+                SetProperty(ref _selectedCurrency, value);
+                return;
+            }
+            if (SetProperty(ref _selectedCurrency, value))
             {
                 _ = UpdateBaseCurrencyAsync(value.Code);
             }
@@ -81,7 +89,13 @@ public class SettingsViewModel : ViewModelBase
         get => _selectedLanguage;
         set
         {
-            if (SetProperty(ref _selectedLanguage, value) && value != null)
+            if (value == null) return;
+            if (_isSuppressingUpdates)
+            {
+                SetProperty(ref _selectedLanguage, value);
+                return;
+            }
+            if (SetProperty(ref _selectedLanguage, value))
             {
                 _ = UpdateLanguageAsync(value.Code);
             }
@@ -94,6 +108,12 @@ public class SettingsViewModel : ViewModelBase
         get => _selectedTheme;
         set
         {
+            if (value == null) return;
+            if (_isSuppressingUpdates)
+            {
+                SetProperty(ref _selectedTheme, value);
+                return;
+            }
             if (SetProperty(ref _selectedTheme, value))
             {
                 _ = UpdateThemeAsync(value);
@@ -107,6 +127,11 @@ public class SettingsViewModel : ViewModelBase
         get => _hideBalances;
         set
         {
+            if (_isSuppressingUpdates)
+            {
+                SetProperty(ref _hideBalances, value);
+                return;
+            }
             if (SetProperty(ref _hideBalances, value))
             {
                 _ = UpdateHideBalancesAsync(value);
@@ -183,39 +208,53 @@ public class SettingsViewModel : ViewModelBase
 
     public async Task InitializeAsync()
     {
-        AvailableCurrencies.Clear();
-        foreach (var c in CurrencyConfig.SupportedCurrencies)
+        _isSuppressingUpdates = true;
+        try
         {
-            AvailableCurrencies.Add(c);
-        }
+            if (AvailableCurrencies.Count == 0)
+            {
+                foreach (var c in CurrencyConfig.SupportedCurrencies)
+                {
+                    AvailableCurrencies.Add(c);
+                }
+            }
 
-        AvailableLanguages.Clear();
-        foreach (var lang in LocalizationService.Current.SupportedLanguages)
+            if (AvailableLanguages.Count == 0)
+            {
+                foreach (var lang in LocalizationService.Current.SupportedLanguages)
+                {
+                    AvailableLanguages.Add(lang);
+                }
+            }
+
+            if (AvailableSyncIntervals.Count == 0)
+            {
+                foreach (var opt in SyncIntervalOption.DefaultOptions)
+                {
+                    AvailableSyncIntervals.Add(opt);
+                }
+            }
+            _selectedSyncInterval = AvailableSyncIntervals.FirstOrDefault(o => o.Minutes == _syncCoordinator.SyncIntervalMinutes)
+                                    ?? AvailableSyncIntervals.FirstOrDefault(o => o.Minutes == 60);
+            OnPropertyChanged(nameof(SelectedSyncInterval));
+            OnPropertyChanged(nameof(IsAutoSyncEnabled));
+            OnPropertyChanged(nameof(IsSyncOnStartupEnabled));
+            OnPropertyChanged(nameof(ConnectedAccountEmail));
+
+            var settings = await _store.GetSettingsAsync();
+            SelectedCurrency = AvailableCurrencies.FirstOrDefault(c => c.Code == settings.BaseCurrencyCode) ?? AvailableCurrencies.FirstOrDefault(c => c.Code == "EUR");
+            SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code.Equals(settings.SelectedLanguage, StringComparison.OrdinalIgnoreCase))
+                               ?? AvailableLanguages.FirstOrDefault(l => l.Code == "SYSTEM");
+            SelectedTheme = settings.DarkMode ?? "System";
+            HideBalances = settings.HideBalances;
+
+            CurrentUser = _authService.CurrentUser;
+            UpdateSyncStatus();
+        }
+        finally
         {
-            AvailableLanguages.Add(lang);
+            _isSuppressingUpdates = false;
         }
-
-        AvailableSyncIntervals.Clear();
-        foreach (var opt in SyncIntervalOption.DefaultOptions)
-        {
-            AvailableSyncIntervals.Add(opt);
-        }
-        _selectedSyncInterval = AvailableSyncIntervals.FirstOrDefault(o => o.Minutes == _syncCoordinator.SyncIntervalMinutes)
-                                ?? AvailableSyncIntervals.FirstOrDefault(o => o.Minutes == 60);
-        OnPropertyChanged(nameof(SelectedSyncInterval));
-        OnPropertyChanged(nameof(IsAutoSyncEnabled));
-        OnPropertyChanged(nameof(IsSyncOnStartupEnabled));
-        OnPropertyChanged(nameof(ConnectedAccountEmail));
-
-        var settings = await _store.GetSettingsAsync();
-        SelectedCurrency = AvailableCurrencies.FirstOrDefault(c => c.Code == settings.BaseCurrencyCode) ?? AvailableCurrencies.FirstOrDefault(c => c.Code == "EUR");
-        SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code.Equals(settings.SelectedLanguage, StringComparison.OrdinalIgnoreCase))
-                           ?? AvailableLanguages.FirstOrDefault(l => l.Code == "SYSTEM");
-        SelectedTheme = settings.DarkMode ?? "System";
-        HideBalances = settings.HideBalances;
-
-        CurrentUser = _authService.CurrentUser;
-        UpdateSyncStatus();
     }
 
     private void UpdateSyncStatus()
@@ -273,24 +312,40 @@ public class SettingsViewModel : ViewModelBase
 
     private async Task UpdateLanguageAsync(string code)
     {
+        if (string.IsNullOrWhiteSpace(code)) return;
+
         var settings = await _store.GetSettingsAsync();
-        if (settings.SelectedLanguage == code) return;
+        if (string.Equals(settings.SelectedLanguage, code, StringComparison.OrdinalIgnoreCase)) return;
 
-        settings.SelectedLanguage = code;
-        await _store.SaveSettingsAsync(settings);
-        LocalizationService.Current.ApplyLanguage(code);
-
-        // Refresh language list items in case display name of System Default changed
-        var currentCode = code;
-        AvailableLanguages.Clear();
-        foreach (var lang in LocalizationService.Current.SupportedLanguages)
+        _isSuppressingUpdates = true;
+        try
         {
-            AvailableLanguages.Add(lang);
+            settings.SelectedLanguage = code;
+            await _store.SaveSettingsAsync(settings);
+            LocalizationService.Current.ApplyLanguage(code);
+
+            // Update SYSTEM option native name in place without clearing the collection
+            var newSysName = LocalizationService.Current.GetString("Language_SystemDefault", "System default");
+            if (AvailableLanguages.Count > 0 && AvailableLanguages[0].Code == "SYSTEM")
+            {
+                if (AvailableLanguages[0].NativeName != newSysName)
+                {
+                    bool isSysSelected = _selectedLanguage?.Code == "SYSTEM";
+                    var updatedSysOption = new LanguageOption("SYSTEM", newSysName, "System default");
+                    AvailableLanguages[0] = updatedSysOption;
+                    if (isSysSelected)
+                    {
+                        _selectedLanguage = updatedSysOption;
+                        OnPropertyChanged(nameof(SelectedLanguage));
+                    }
+                }
+            }
+            UpdateSyncStatus();
         }
-        _selectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code.Equals(currentCode, StringComparison.OrdinalIgnoreCase))
-                            ?? AvailableLanguages.FirstOrDefault(l => l.Code == "SYSTEM");
-        OnPropertyChanged(nameof(SelectedLanguage));
-        UpdateSyncStatus();
+        finally
+        {
+            _isSuppressingUpdates = false;
+        }
     }
 
     private async Task UpdateBaseCurrencyAsync(string code)
