@@ -32,8 +32,31 @@ public sealed partial class MainWindow : Window
         // Set Desktop Window Size (1240 x 820)
         AppWindow.Resize(new SizeInt32(1240, 820));
 
+        Activated += MainWindow_Activated;
+
         // Initial navigation
         NavigateToTag(!string.IsNullOrWhiteSpace(initialTag) ? initialTag : "overview");
+    }
+
+    private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+    {
+        if (args.WindowActivationState != WindowActivationState.Deactivated)
+        {
+            try
+            {
+                var sync = App.Services.GetService<ISyncService>();
+                var auth = App.Services.GetService<IAuthService>();
+                if (sync != null && auth != null && auth.IsLoggedIn)
+                {
+                    long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    if (now - sync.LastSyncTimestamp > 45000 || sync.PendingChangesCount > 0)
+                    {
+                        _ = sync.PerformFullSyncAsync();
+                    }
+                }
+            }
+            catch { }
+        }
     }
 
     private void TitleBar_PaneToggleRequested(TitleBar sender, object args)

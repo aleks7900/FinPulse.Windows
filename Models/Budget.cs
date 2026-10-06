@@ -58,6 +58,12 @@ public class Budget
     [JsonPropertyName("alertThresholdPercent")]
     public int AlertThresholdPercent { get; set; } = 85;
 
+    [JsonPropertyName("createdAt")]
+    public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    [JsonPropertyName("updatedAt")]
+    public long UpdatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
     [JsonIgnore]
     public Money EffectiveLimit
     {

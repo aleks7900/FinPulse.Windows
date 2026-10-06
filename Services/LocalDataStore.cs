@@ -22,6 +22,7 @@ public class LocalDataStore : ILocalDataStore
     private readonly ConcurrentDictionary<string, RecurringTransaction> _recurringRules = new();
     private readonly ConcurrentDictionary<string, FinancialGoal> _goals = new();
     private readonly ConcurrentDictionary<string, SyncQueueItem> _syncQueue = new();
+    private readonly ConcurrentDictionary<string, LocalTombstone> _tombstones = new();
     private CloudSettings _settings = new();
 
     public event EventHandler? DataChanged;
@@ -53,6 +54,7 @@ public class LocalDataStore : ILocalDataStore
             await LoadDictionaryAsync("recurring.json", _recurringRules);
             await LoadDictionaryAsync("goals.json", _goals);
             await LoadDictionaryAsync("sync_queue.json", _syncQueue);
+            await LoadDictionaryAsync("tombstones.json", _tombstones);
 
             // Populate default categories if empty
             if (_categories.IsEmpty)
@@ -253,13 +255,18 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task UpsertAccountAsync(Account account, bool markForSync = true)
     {
-        account.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (account.UpdatedAt <= 0)
+        {
+            account.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
         _accounts[account.Id] = account;
+        _tombstones.TryRemove($"ACCOUNT:{account.Id}", out _);
+        _ = SaveDictionaryAsync("tombstones.json", _tombstones);
         await SaveDictionaryAsync("accounts.json", _accounts);
 
         if (markForSync)
         {
-            EnqueueSync("ACCOUNT", account.Id, "UPSERT");
+            EnqueueSync("ACCOUNT", account.Id, "UPSERT", account.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -269,9 +276,13 @@ public class LocalDataStore : ILocalDataStore
         if (_accounts.TryRemove(id, out _))
         {
             await SaveDictionaryAsync("accounts.json", _accounts);
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _tombstones[$"ACCOUNT:{id}"] = new LocalTombstone("ACCOUNT", id, now);
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
+
             if (markForSync)
             {
-                EnqueueSync("ACCOUNT", id, "DELETE");
+                EnqueueSync("ACCOUNT", id, "DELETE", now);
             }
             DataChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -317,40 +328,57 @@ public class LocalDataStore : ILocalDataStore
         }
     }
 
-    public async Task UpsertTransactionAsync(Transaction transaction, bool markForSync = true)
+    public async Task UpsertTransactionAsync(Transaction transaction, bool markForSync = true, bool adjustBalance = true)
     {
-        // Double-entry balance adjustment
-        if (_transactions.TryGetValue(transaction.Id, out var existing))
+        if (transaction.UpdatedAt <= 0)
         {
-            // Reverse existing transaction effect
-            ReverseBalanceEffect(existing);
+            transaction.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
-        // Apply new transaction balance effect
-        ApplyBalanceEffect(transaction);
+        if (adjustBalance)
+        {
+            // Double-entry balance adjustment
+            if (_transactions.TryGetValue(transaction.Id, out var existing))
+            {
+                // Reverse existing transaction effect
+                ReverseBalanceEffect(existing);
+            }
+
+            // Apply new transaction balance effect
+            ApplyBalanceEffect(transaction);
+            await SaveDictionaryAsync("accounts.json", _accounts);
+        }
 
         _transactions[transaction.Id] = transaction;
+        _tombstones.TryRemove($"TRANSACTION:{transaction.Id}", out _);
+        _ = SaveDictionaryAsync("tombstones.json", _tombstones);
         await SaveDictionaryAsync("transactions.json", _transactions);
-        await SaveDictionaryAsync("accounts.json", _accounts);
 
         if (markForSync)
         {
-            EnqueueSync("TRANSACTION", transaction.Id, "UPSERT");
+            EnqueueSync("TRANSACTION", transaction.Id, "UPSERT", transaction.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public async Task DeleteTransactionAsync(string id, bool markForSync = true)
+    public async Task DeleteTransactionAsync(string id, bool markForSync = true, bool adjustBalance = true)
     {
         if (_transactions.TryRemove(id, out var tx))
         {
-            ReverseBalanceEffect(tx);
+            if (adjustBalance)
+            {
+                ReverseBalanceEffect(tx);
+                await SaveDictionaryAsync("accounts.json", _accounts);
+            }
             await SaveDictionaryAsync("transactions.json", _transactions);
-            await SaveDictionaryAsync("accounts.json", _accounts);
+
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _tombstones[$"TRANSACTION:{id}"] = new LocalTombstone("TRANSACTION", id, now);
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
 
             if (markForSync)
             {
-                EnqueueSync("TRANSACTION", id, "DELETE");
+                EnqueueSync("TRANSACTION", id, "DELETE", now);
             }
             DataChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -437,24 +465,35 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task UpsertCategoryAsync(Category category, bool markForSync = true)
     {
+        if (category.UpdatedAt <= 0)
+        {
+            category.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
+
         _categories[category.Id] = category;
+        _tombstones.TryRemove($"CATEGORY:{category.Id}", out _);
+        _ = SaveDictionaryAsync("tombstones.json", _tombstones);
         await SaveDictionaryAsync("categories.json", _categories);
 
         if (markForSync)
         {
-            EnqueueSync("CATEGORY", category.Id, "UPSERT");
+            EnqueueSync("CATEGORY", category.Id, "UPSERT", category.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public async Task DeleteCategoryAsync(string id, bool markForSync = true)
     {
-        if (_categories.TryRemove(id, out _))
+        if (_categories.TryRemove(id, out var cat))
         {
             await SaveDictionaryAsync("categories.json", _categories);
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _tombstones[$"CATEGORY:{id}"] = new LocalTombstone("CATEGORY", id, now);
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
+
             if (markForSync)
             {
-                EnqueueSync("CATEGORY", id, "DELETE");
+                EnqueueSync("CATEGORY", id, "DELETE", now);
             }
             DataChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -493,12 +532,19 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task UpsertBudgetAsync(Budget budget, bool markForSync = true)
     {
+        if (budget.UpdatedAt <= 0)
+        {
+            budget.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
+
         _budgets[budget.Id] = budget;
+        _tombstones.TryRemove($"BUDGET:{budget.Id}", out _);
+        _ = SaveDictionaryAsync("tombstones.json", _tombstones);
         await SaveDictionaryAsync("budgets.json", _budgets);
 
         if (markForSync)
         {
-            EnqueueSync("BUDGET", budget.Id, "UPSERT");
+            EnqueueSync("BUDGET", budget.Id, "UPSERT", budget.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -508,9 +554,13 @@ public class LocalDataStore : ILocalDataStore
         if (_budgets.TryRemove(id, out _))
         {
             await SaveDictionaryAsync("budgets.json", _budgets);
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _tombstones[$"BUDGET:{id}"] = new LocalTombstone("BUDGET", id, now);
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
+
             if (markForSync)
             {
-                EnqueueSync("BUDGET", id, "DELETE");
+                EnqueueSync("BUDGET", id, "DELETE", now);
             }
             DataChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -539,12 +589,19 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task UpsertRecurringRuleAsync(RecurringTransaction rule, bool markForSync = true)
     {
+        if (rule.UpdatedAt <= 0)
+        {
+            rule.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
+
         _recurringRules[rule.Id] = rule;
+        _tombstones.TryRemove($"RECURRING_RULE:{rule.Id}", out _);
+        _ = SaveDictionaryAsync("tombstones.json", _tombstones);
         await SaveDictionaryAsync("recurring.json", _recurringRules);
 
         if (markForSync)
         {
-            EnqueueSync("RECURRING_RULE", rule.Id, "UPSERT");
+            EnqueueSync("RECURRING_RULE", rule.Id, "UPSERT", rule.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -554,9 +611,13 @@ public class LocalDataStore : ILocalDataStore
         if (_recurringRules.TryRemove(id, out _))
         {
             await SaveDictionaryAsync("recurring.json", _recurringRules);
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _tombstones[$"RECURRING_RULE:{id}"] = new LocalTombstone("RECURRING_RULE", id, now);
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
+
             if (markForSync)
             {
-                EnqueueSync("RECURRING_RULE", id, "DELETE");
+                EnqueueSync("RECURRING_RULE", id, "DELETE", now);
             }
             DataChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -577,12 +638,19 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task UpsertGoalAsync(FinancialGoal goal, bool markForSync = true)
     {
+        if (goal.UpdatedAt <= 0)
+        {
+            goal.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
+
         _goals[goal.Id] = goal;
+        _tombstones.TryRemove($"GOAL:{goal.Id}", out _);
+        _ = SaveDictionaryAsync("tombstones.json", _tombstones);
         await SaveDictionaryAsync("goals.json", _goals);
 
         if (markForSync)
         {
-            EnqueueSync("GOAL", goal.Id, "UPSERT");
+            EnqueueSync("GOAL", goal.Id, "UPSERT", goal.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -592,9 +660,13 @@ public class LocalDataStore : ILocalDataStore
         if (_goals.TryRemove(id, out _))
         {
             await SaveDictionaryAsync("goals.json", _goals);
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _tombstones[$"GOAL:{id}"] = new LocalTombstone("GOAL", id, now);
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
+
             if (markForSync)
             {
-                EnqueueSync("GOAL", id, "DELETE");
+                EnqueueSync("GOAL", id, "DELETE", now);
             }
             DataChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -606,23 +678,95 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task SaveSettingsAsync(CloudSettings settings, bool markForSync = true)
     {
-        settings.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (markForSync || settings.UpdatedAt <= 0)
+        {
+            settings.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
         _settings = settings;
         await SaveToFileAsync("settings.json", JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true }));
 
         if (markForSync)
         {
-            EnqueueSync("SETTINGS", CloudSettings.SettingsDocumentId, "UPSERT");
+            EnqueueSync("SETTINGS", CloudSettings.SettingsDocumentId, "UPSERT", settings.UpdatedAt);
         }
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
     #endregion
 
-    #region Sync Queue
-    private void EnqueueSync(string type, string id, string action)
+    #region Metadata & Tombstones
+    public Task<long?> GetEntityUpdatedAtAsync(string entityType, string id)
     {
-        string key = $"{type}:{id}";
-        _syncQueue[key] = new SyncQueueItem(type, id, action, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        long? result = NormalizeEntityType(entityType) switch
+        {
+            "ACCOUNT" => _accounts.TryGetValue(id, out var a) ? a.UpdatedAt : null,
+            "TRANSACTION" => _transactions.TryGetValue(id, out var t) ? (t.UpdatedAt > 0 ? t.UpdatedAt : Math.Max(t.Timestamp, t.CreatedAt)) : null,
+            "CATEGORY" => _categories.TryGetValue(id, out var c) ? c.UpdatedAt : null,
+            "BUDGET" => _budgets.TryGetValue(id, out var b) ? b.UpdatedAt : null,
+            "RECURRING_RULE" => _recurringRules.TryGetValue(id, out var r) ? r.UpdatedAt : null,
+            "GOAL" => _goals.TryGetValue(id, out var g) ? g.UpdatedAt : null,
+            "SETTINGS" => _settings.UpdatedAt,
+            _ => null
+        };
+        return Task.FromResult(result);
+    }
+
+    public Task<LocalTombstone?> GetTombstoneAsync(string entityType, string id)
+    {
+        string normType = NormalizeEntityType(entityType);
+        _tombstones.TryGetValue($"{normType}:{id}", out var tombstone);
+        return Task.FromResult(tombstone);
+    }
+
+    public Task<List<LocalTombstone>> GetAllTombstonesAsync()
+    {
+        return Task.FromResult(_tombstones.Values.ToList());
+    }
+
+    public async Task RecordTombstoneAsync(string entityType, string id, long deletedAt, bool markForSync = true)
+    {
+        string normType = NormalizeEntityType(entityType);
+        var tombstone = new LocalTombstone(normType, id, deletedAt);
+        _tombstones[$"{normType}:{id}"] = tombstone;
+        await SaveDictionaryAsync("tombstones.json", _tombstones);
+
+        if (markForSync)
+        {
+            EnqueueSync(normType, id, "DELETE", deletedAt);
+        }
+    }
+
+    public async Task ClearTombstoneAsync(string entityType, string id)
+    {
+        string normType = NormalizeEntityType(entityType);
+        if (_tombstones.TryRemove($"{normType}:{id}", out _))
+        {
+            await SaveDictionaryAsync("tombstones.json", _tombstones);
+        }
+    }
+
+    public static string NormalizeEntityType(string type)
+    {
+        return type.ToUpperInvariant() switch
+        {
+            "ACCOUNTS" or "ACCOUNT" => "ACCOUNT",
+            "CATEGORIES" or "CATEGORY" => "CATEGORY",
+            "TRANSACTIONS" or "TRANSACTION" => "TRANSACTION",
+            "BUDGETS" or "BUDGET" => "BUDGET",
+            "RECURRING_RULES" or "RECURRING_RULE" or "RECURRING" => "RECURRING_RULE",
+            "GOALS" or "GOAL" => "GOAL",
+            "SETTINGS" => "SETTINGS",
+            _ => type.ToUpperInvariant()
+        };
+    }
+    #endregion
+
+    #region Sync Queue
+    public void EnqueueSync(string type, string id, string action, long? timestamp = null)
+    {
+        string normType = NormalizeEntityType(type);
+        string key = $"{normType}:{id}";
+        long ts = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _syncQueue[key] = new SyncQueueItem(normType, id, action, ts);
         _ = SaveDictionaryAsync("sync_queue.json", _syncQueue);
     }
 
@@ -649,6 +793,7 @@ public class LocalDataStore : ILocalDataStore
         _recurringRules.Clear();
         _goals.Clear();
         _syncQueue.Clear();
+        _tombstones.Clear();
 
         await SaveDictionaryAsync("accounts.json", _accounts);
         await SaveDictionaryAsync("transactions.json", _transactions);
@@ -657,6 +802,7 @@ public class LocalDataStore : ILocalDataStore
         await SaveDictionaryAsync("recurring.json", _recurringRules);
         await SaveDictionaryAsync("goals.json", _goals);
         await SaveDictionaryAsync("sync_queue.json", _syncQueue);
+        await SaveDictionaryAsync("tombstones.json", _tombstones);
 
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -711,6 +857,28 @@ public class LocalDataStore : ILocalDataStore
             {
                 string json = await File.ReadAllTextAsync(path);
                 var list = JsonSerializer.Deserialize<List<SyncQueueItem>>(json);
+                if (list != null)
+                {
+                    dict.Clear();
+                    foreach (var item in list)
+                    {
+                        dict[$"{item.EntityType}:{item.EntityId}"] = item;
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task LoadDictionaryAsync(string filename, ConcurrentDictionary<string, LocalTombstone> dict)
+    {
+        try
+        {
+            string path = Path.Combine(_dataDir, filename);
+            if (File.Exists(path))
+            {
+                string json = await File.ReadAllTextAsync(path);
+                var list = JsonSerializer.Deserialize<List<LocalTombstone>>(json);
                 if (list != null)
                 {
                     dict.Clear();

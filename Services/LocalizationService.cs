@@ -66,7 +66,7 @@ public class LocalizationService : ILocalizationService
 
     public LocalizationService()
     {
-        _currentInstance = this;
+        _currentInstance ??= this;
         InitializeLoader();
     }
 
@@ -254,7 +254,8 @@ public class LocalizationService : ILocalizationService
 
             try
             {
-                var doc = XDocument.Load(reswPath);
+                using var stream = new FileStream(reswPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                var doc = XDocument.Load(stream);
                 foreach (var data in doc.Descendants("data"))
                 {
                     var nameAttr = data.Attribute("name")?.Value;

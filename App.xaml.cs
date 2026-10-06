@@ -89,9 +89,15 @@ public partial class App : Application
         {
             var authService = Services.GetRequiredService<IAuthService>();
             var localStore = Services.GetRequiredService<ILocalDataStore>();
+            var syncService = Services.GetRequiredService<ISyncService>();
 
             await authService.InitializeAsync();
             await localStore.InitializeAsync();
+
+            if (authService.IsLoggedIn)
+            {
+                _ = syncService.PerformFullSyncAsync();
+            }
         }
         catch (Exception ex)
         {

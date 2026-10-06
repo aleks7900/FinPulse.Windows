@@ -9,7 +9,9 @@ public enum SyncStatus
     IDLE,
     SYNCING,
     SUCCESS,
-    ERROR
+    ERROR,
+    OFFLINE,
+    PENDING_CHANGES
 }
 
 public interface ISyncService
@@ -21,8 +23,8 @@ public interface ISyncService
 
     event EventHandler<SyncStatus>? SyncStatusChanged;
 
-    Task<SyncResult> PerformFullSyncAsync();
-    Task<SyncResult> UploadPendingChangesAsync();
-    Task<SyncResult> DownloadRemoteChangesAsync();
+    Task<SyncResult> PerformFullSyncAsync(CancellationToken cancellationToken = default);
+    Task<SyncResult> UploadPendingChangesAsync(CancellationToken cancellationToken = default);
+    Task<SyncResult> DownloadRemoteChangesAsync(CancellationToken cancellationToken = default);
     Task ClearCloudDataAsync();
 }

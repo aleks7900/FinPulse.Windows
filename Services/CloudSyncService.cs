@@ -1,17 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using FinPulse.Windows.Models;
 
 namespace FinPulse.Windows.Services;
 
-public class CloudSyncService : ISyncService
+public class CloudSyncService : ISyncService, IDisposable
 {
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly ILocalDataStore _localStore;
     private readonly IFirestoreClient _firestoreClient;
     private readonly IAuthService _authService;
+    private readonly SemaphoreSlim _syncLock = new(1, 1);
+
+    private readonly Timer _debounceTimer;
+    private readonly Timer _periodicTimer;
+    private bool _isDisposed;
 
     public SyncStatus CurrentStatus { get; private set; } = SyncStatus.IDLE;
     public long LastSyncTimestamp { get; private set; } = 0L;
@@ -22,6 +35,29 @@ public class CloudSyncService : ISyncService
 
     private int _pendingCount = 0;
 
+    // Dependency-ordered entity types for PUSH
+    private static readonly string[] PushOrder =
+    [
+        "ACCOUNT",
+        "CATEGORY",
+        "BUDGET",
+        "GOAL",
+        "RECURRING_RULE",
+        "TRANSACTION",
+        "SETTINGS"
+    ];
+
+    // Dependency-ordered collection names for PULL
+    private static readonly string[] PullOrder =
+    [
+        "accounts",
+        "categories",
+        "budgets",
+        "goals",
+        "recurring_rules",
+        "transactions"
+    ];
+
     public CloudSyncService(
         ILocalDataStore localStore,
         IFirestoreClient firestoreClient,
@@ -31,38 +67,153 @@ public class CloudSyncService : ISyncService
         _firestoreClient = firestoreClient;
         _authService = authService;
 
-        _localStore.DataChanged += async (s, e) =>
+        // Debounce timer for coalescing rapid local modifications (2.5 seconds)
+        _debounceTimer = new Timer(OnDebounceTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
+
+        // Periodic background sync timer (every 10 minutes)
+        _periodicTimer = new Timer(OnPeriodicTimerElapsed, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+
+        // Listen for local changes to track pending count and trigger debounced sync
+        _localStore.DataChanged += OnLocalDataChanged;
+
+        // Listen for auth changes to trigger sync on sign-in
+        _authService.AuthStateChanged += OnAuthStateChanged;
+
+        // Listen for network connectivity restored
+        try
+        {
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+        }
+        catch { }
+    }
+
+    private void OnLocalDataChanged(object? sender, EventArgs e)
+    {
+        _ = UpdatePendingCountAsync();
+
+        // If online and logged in, debounce a sync pass
+        if (_authService.IsLoggedIn && IsNetworkAvailable())
+        {
+            _debounceTimer.Change(2500, Timeout.Infinite);
+        }
+        else if (!IsNetworkAvailable() && _pendingCount > 0)
+        {
+            SetStatus(SyncStatus.PENDING_CHANGES);
+        }
+    }
+
+    private async Task UpdatePendingCountAsync()
+    {
+        try
         {
             var pending = await _localStore.GetPendingSyncItemsAsync();
             _pendingCount = pending.Count;
-        };
+            if (_pendingCount > 0 && CurrentStatus == SyncStatus.IDLE)
+            {
+                SetStatus(SyncStatus.PENDING_CHANGES);
+            }
+        }
+        catch { }
     }
 
-    public async Task<SyncResult> PerformFullSyncAsync()
+    private void OnAuthStateChanged(object? sender, UserSession? user)
+    {
+        if (user != null && !string.IsNullOrWhiteSpace(user.Uid))
+        {
+            // Auto sync upon user sign-in
+            Task.Run(async () =>
+            {
+                await Task.Delay(500); // brief settling period
+                await PerformFullSyncAsync();
+            });
+        }
+        else
+        {
+            LastSyncTimestamp = 0;
+            SetStatus(SyncStatus.IDLE);
+        }
+    }
+
+    private void OnNetworkAddressChanged(object? sender, EventArgs e)
+    {
+        if (IsNetworkAvailable() && _authService.IsLoggedIn)
+        {
+            Debug.WriteLine("[CloudSync] Network connectivity restored. Triggering sync...");
+            Task.Run(async () =>
+            {
+                await Task.Delay(1500); // Allow interface routing table to settle
+                await PerformFullSyncAsync();
+            });
+        }
+    }
+
+    private void OnDebounceTimerElapsed(object? state)
+    {
+        if (_authService.IsLoggedIn && IsNetworkAvailable())
+        {
+            _ = PerformFullSyncAsync();
+        }
+    }
+
+    private void OnPeriodicTimerElapsed(object? state)
+    {
+        if (_authService.IsLoggedIn && IsNetworkAvailable() && CurrentStatus != SyncStatus.SYNCING)
+        {
+            _ = PerformFullSyncAsync();
+        }
+    }
+
+    public static bool IsNetworkAvailable()
+    {
+        try
+        {
+            return NetworkInterface.GetIsNetworkAvailable();
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    public async Task<SyncResult> PerformFullSyncAsync(CancellationToken cancellationToken = default)
     {
         var user = _authService.CurrentUser;
         if (user == null || string.IsNullOrWhiteSpace(user.Uid))
         {
-            CurrentStatus = SyncStatus.IDLE;
+            SetStatus(SyncStatus.IDLE);
             return new SyncResult { IsSuccess = false, ErrorMessage = "No user logged in" };
         }
 
-        SetStatus(SyncStatus.SYNCING);
+        if (!IsNetworkAvailable())
+        {
+            var pending = await _localStore.GetPendingSyncItemsAsync();
+            SetStatus(pending.Count > 0 ? SyncStatus.PENDING_CHANGES : SyncStatus.OFFLINE);
+            return new SyncResult { IsSuccess = false, ErrorMessage = "Network is offline" };
+        }
+
+        // Single-flight lock: prevent multiple synchronization runs from corrupting state
+        await _syncLock.WaitAsync(cancellationToken);
         try
         {
-            // 1. Upload pending local changes
-            var uploadRes = await UploadPendingChangesInternalAsync(user.Uid);
+            SetStatus(SyncStatus.SYNCING);
 
-            // 2. Download remote changes since LastSyncTimestamp
-            var downloadRes = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp);
+            // Step 1: PUSH local pending changes in safe dependency order
+            var uploadRes = await UploadPendingChangesInternalAsync(user.Uid, cancellationToken);
 
-            // 3. Sync Settings
-            await SyncSettingsInternalAsync(user.Uid);
+            // Step 2: PULL remote changes in safe dependency order and reconcile per-entity (LWW)
+            var downloadRes = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp, cancellationToken);
+
+            // Step 3: Reconcile Settings
+            await SyncSettingsInternalAsync(user.Uid, cancellationToken);
 
             long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             LastSyncTimestamp = now;
             LastErrorMessage = null;
-            SetStatus(SyncStatus.SUCCESS);
+
+            var remainingPending = await _localStore.GetPendingSyncItemsAsync();
+            _pendingCount = remainingPending.Count;
+
+            SetStatus(_pendingCount > 0 ? SyncStatus.PENDING_CHANGES : SyncStatus.SUCCESS);
 
             return new SyncResult
             {
@@ -70,28 +221,45 @@ public class CloudSyncService : ISyncService
                 UploadedCount = uploadRes.UploadedCount,
                 DownloadedCount = downloadRes.DownloadedCount,
                 DeletedCount = uploadRes.DeletedCount + downloadRes.DeletedCount,
-                ConflictsResolvedCount = downloadRes.ConflictsResolvedCount,
+                ConflictsResolvedCount = uploadRes.ConflictsResolvedCount + downloadRes.ConflictsResolvedCount,
                 SyncedAt = now
             };
         }
+        catch (OperationCanceledException)
+        {
+            Debug.WriteLine("[CloudSync] Synchronization cancelled.");
+            return new SyncResult { IsSuccess = false, ErrorMessage = "Sync operation cancelled" };
+        }
         catch (Exception ex)
         {
             LastErrorMessage = ex.Message;
+            Debug.WriteLine($"[CloudSync] Sync failed: {ex.Message}");
             SetStatus(SyncStatus.ERROR);
             return new SyncResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
+        finally
+        {
+            _syncLock.Release();
+        }
     }
 
-    public async Task<SyncResult> UploadPendingChangesAsync()
+    public async Task<SyncResult> UploadPendingChangesAsync(CancellationToken cancellationToken = default)
     {
         var user = _authService.CurrentUser;
         if (user == null || string.IsNullOrWhiteSpace(user.Uid))
             return new SyncResult { IsSuccess = false, ErrorMessage = "No user logged in" };
 
-        SetStatus(SyncStatus.SYNCING);
+        if (!IsNetworkAvailable())
+        {
+            SetStatus(SyncStatus.OFFLINE);
+            return new SyncResult { IsSuccess = false, ErrorMessage = "Network is offline" };
+        }
+
+        await _syncLock.WaitAsync(cancellationToken);
         try
         {
-            var res = await UploadPendingChangesInternalAsync(user.Uid);
+            SetStatus(SyncStatus.SYNCING);
+            var res = await UploadPendingChangesInternalAsync(user.Uid, cancellationToken);
             SetStatus(SyncStatus.SUCCESS);
             return res;
         }
@@ -101,18 +269,29 @@ public class CloudSyncService : ISyncService
             SetStatus(SyncStatus.ERROR);
             return new SyncResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
+        finally
+        {
+            _syncLock.Release();
+        }
     }
 
-    public async Task<SyncResult> DownloadRemoteChangesAsync()
+    public async Task<SyncResult> DownloadRemoteChangesAsync(CancellationToken cancellationToken = default)
     {
         var user = _authService.CurrentUser;
         if (user == null || string.IsNullOrWhiteSpace(user.Uid))
             return new SyncResult { IsSuccess = false, ErrorMessage = "No user logged in" };
 
-        SetStatus(SyncStatus.SYNCING);
+        if (!IsNetworkAvailable())
+        {
+            SetStatus(SyncStatus.OFFLINE);
+            return new SyncResult { IsSuccess = false, ErrorMessage = "Network is offline" };
+        }
+
+        await _syncLock.WaitAsync(cancellationToken);
         try
         {
-            var res = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp);
+            SetStatus(SyncStatus.SYNCING);
+            var res = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp, cancellationToken);
             SetStatus(SyncStatus.SUCCESS);
             return res;
         }
@@ -122,28 +301,45 @@ public class CloudSyncService : ISyncService
             SetStatus(SyncStatus.ERROR);
             return new SyncResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
+        finally
+        {
+            _syncLock.Release();
+        }
     }
 
-    private async Task<SyncResult> UploadPendingChangesInternalAsync(string uid)
+    private async Task<SyncResult> UploadPendingChangesInternalAsync(string uid, CancellationToken cancellationToken)
     {
         var pending = await _localStore.GetPendingSyncItemsAsync();
         int uploaded = 0;
         int deleted = 0;
 
-        // Group by collection/type
-        var byType = pending.GroupBy(p => p.EntityType);
-
-        foreach (var group in byType)
+        if (pending.Count == 0)
         {
-            string entityType = group.Key;
-            string collection = GetCollectionName(entityType);
+            return new SyncResult { IsSuccess = true, UploadedCount = 0, DeletedCount = 0 };
+        }
 
+        // Group items by normalized entity type
+        var grouped = pending.GroupBy(p => LocalDataStore.NormalizeEntityType(p.EntityType))
+                             .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Process in strict dependency order
+        foreach (var entityType in PushOrder)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!grouped.TryGetValue(entityType, out var items))
+                continue;
+
+            string collection = GetCollectionName(entityType);
             var toUploadRecords = new List<CloudEntityRecord>();
 
-            foreach (var item in group)
+            foreach (var item in items)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (item.Action == "DELETE")
                 {
+                    Debug.WriteLine($"[CloudSync] TOMBSTONE_PUSH {entityType} {item.EntityId}: local deletion newer ({item.Timestamp})");
                     await _firestoreClient.RecordTombstoneAsync(uid, collection, item.EntityId, item.Timestamp);
                     await _localStore.RemoveFromSyncQueueAsync(item.EntityType, item.EntityId);
                     deleted++;
@@ -153,14 +349,22 @@ public class CloudSyncService : ISyncService
                     string? payload = await SerializeEntityAsync(entityType, item.EntityId);
                     if (!string.IsNullOrEmpty(payload))
                     {
+                        long? localUpdatedAt = await _localStore.GetEntityUpdatedAtAsync(entityType, item.EntityId);
+                        long updatedAt = localUpdatedAt ?? item.Timestamp;
+
                         toUploadRecords.Add(new CloudEntityRecord
                         {
                             Id = item.EntityId,
                             Collection = collection,
                             JsonPayload = payload,
-                            UpdatedAt = item.Timestamp,
+                            UpdatedAt = updatedAt,
                             IsDeleted = false
                         });
+                    }
+                    else
+                    {
+                        // Entity was deleted or no longer exists locally; remove obsolete queue item
+                        await _localStore.RemoveFromSyncQueueAsync(item.EntityType, item.EntityId);
                     }
                 }
             }
@@ -171,6 +375,7 @@ public class CloudSyncService : ISyncService
                 uploaded += count;
                 foreach (var rec in toUploadRecords)
                 {
+                    Debug.WriteLine($"[CloudSync] PUSH {entityType} {rec.Id}: local newer ({rec.UpdatedAt})");
                     await _localStore.RemoveFromSyncQueueAsync(entityType, rec.Id);
                 }
             }
@@ -179,61 +384,179 @@ public class CloudSyncService : ISyncService
         var remaining = await _localStore.GetPendingSyncItemsAsync();
         _pendingCount = remaining.Count;
 
-        return new SyncResult { IsSuccess = true, UploadedCount = uploaded, DeletedCount = deleted };
+        return new SyncResult
+        {
+            IsSuccess = true,
+            UploadedCount = uploaded,
+            DeletedCount = deleted
+        };
     }
 
-    private async Task<SyncResult> DownloadRemoteChangesInternalAsync(string uid, long sinceTimestamp)
+    private async Task<SyncResult> DownloadRemoteChangesInternalAsync(string uid, long sinceTimestamp, CancellationToken cancellationToken)
     {
         int downloaded = 0;
         int deleted = 0;
+        int conflictsResolved = 0;
 
-        string[] collections = {
-            "accounts", "categories", "transactions", "budgets",
-            "recurring_rules", "goals"
-        };
-
-        foreach (var collection in collections)
+        // Download and reconcile in strict dependency order
+        foreach (var collection in PullOrder)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            string entityType = GetEntityTypeFromCollection(collection);
             var records = await _firestoreClient.DownloadRecordsAsync(uid, collection, sinceTimestamp);
+
             foreach (var rec in records)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (string.IsNullOrWhiteSpace(rec.Id)) continue;
+
+                var localTombstone = await _localStore.GetTombstoneAsync(entityType, rec.Id);
+                long? localUpdatedAt = await _localStore.GetEntityUpdatedAtAsync(entityType, rec.Id);
+
                 if (rec.IsDeleted)
                 {
-                    await DeleteEntityLocallyAsync(collection, rec.Id);
-                    deleted++;
+                    // REMOTE TOMBSTONE
+                    long remoteDeletedAt = rec.DeletedAt ?? rec.UpdatedAt;
+
+                    if (localUpdatedAt.HasValue)
+                    {
+                        if (remoteDeletedAt >= localUpdatedAt.Value)
+                        {
+                            // Remote deletion is newer or equal -> Remote deletion wins
+                            Debug.WriteLine($"[CloudSync] DELETE {entityType} {rec.Id}: remote tombstone newer (remote={remoteDeletedAt} >= local={localUpdatedAt.Value})");
+                            await DeleteEntityLocallyAsync(collection, rec.Id, adjustBalance: false);
+                            await _localStore.RecordTombstoneAsync(entityType, rec.Id, remoteDeletedAt, markForSync: false);
+                            deleted++;
+                        }
+                        else
+                        {
+                            // Local edit occurred AFTER remote deletion -> Local modification wins (resurrect local)
+                            Debug.WriteLine($"[CloudSync] RESURRECT {entityType} {rec.Id}: local modification newer than remote deletion (local={localUpdatedAt.Value} > remote={remoteDeletedAt})");
+                            await _localStore.ClearTombstoneAsync(entityType, rec.Id);
+                            _localStore.EnqueueSync(entityType, rec.Id, "UPSERT", localUpdatedAt.Value);
+                            conflictsResolved++;
+                        }
+                    }
+                    else
+                    {
+                        // Entity is not present locally; record tombstone metadata if needed
+                        await _localStore.RecordTombstoneAsync(entityType, rec.Id, remoteDeletedAt, markForSync: false);
+                    }
                 }
-                else if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
+                else
                 {
-                    await UpsertEntityLocallyAsync(collection, rec.JsonPayload);
-                    downloaded++;
+                    // REMOTE ACTIVE RECORD
+                    if (localTombstone != null)
+                    {
+                        if (localTombstone.DeletedAt >= rec.UpdatedAt)
+                        {
+                            // Local deletion is newer or equal -> Local deletion wins, prevent resurrection!
+                            Debug.WriteLine($"[CloudSync] SKIP_TOMBSTONE {entityType} {rec.Id}: local deletion newer (tombstone={localTombstone.DeletedAt} >= remote={rec.UpdatedAt})");
+                            // Re-queue local tombstone to push to cloud
+                            _localStore.EnqueueSync(entityType, rec.Id, "DELETE", localTombstone.DeletedAt);
+                            conflictsResolved++;
+                        }
+                        else
+                        {
+                            // Remote edit occurred AFTER local deletion -> Remote edit wins (resurrect from remote)
+                            Debug.WriteLine($"[CloudSync] RESURRECT_PULL {entityType} {rec.Id}: remote update newer than local deletion (remote={rec.UpdatedAt} > tombstone={localTombstone.DeletedAt})");
+                            await _localStore.ClearTombstoneAsync(entityType, rec.Id);
+                            if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
+                            {
+                                await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: false);
+                                downloaded++;
+                            }
+                            conflictsResolved++;
+                        }
+                    }
+                    else if (localUpdatedAt.HasValue)
+                    {
+                        if (rec.UpdatedAt > localUpdatedAt.Value)
+                        {
+                            // CLOUD NEWER: remote.updatedAt > local.updatedAt -> PULL
+                            Debug.WriteLine($"[CloudSync] PULL {entityType} {rec.Id}: remote newer (remote={rec.UpdatedAt} > local={localUpdatedAt.Value})");
+                            if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
+                            {
+                                await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: false);
+                                await _localStore.RemoveFromSyncQueueAsync(entityType, rec.Id);
+                                downloaded++;
+                            }
+                        }
+                        else if (localUpdatedAt.Value > rec.UpdatedAt)
+                        {
+                            // WINDOWS LOCAL NEWER: local.updatedAt > remote.updatedAt -> PUSH
+                            Debug.WriteLine($"[CloudSync] PUSH {entityType} {rec.Id}: local newer (local={localUpdatedAt.Value} > remote={rec.UpdatedAt})");
+                            _localStore.EnqueueSync(entityType, rec.Id, "UPSERT", localUpdatedAt.Value);
+                            conflictsResolved++;
+                        }
+                        else
+                        {
+                            // SAME VERSION: local.updatedAt == remote.updatedAt -> no action
+                            Debug.WriteLine($"[CloudSync] SKIP {entityType} {rec.Id}: versions equal ({localUpdatedAt.Value})");
+                        }
+                    }
+                    else
+                    {
+                        // REMOTE ONLY: entity does not exist locally -> PULL into Windows
+                        Debug.WriteLine($"[CloudSync] PULL_NEW {entityType} {rec.Id}: remote only ({rec.UpdatedAt})");
+                        if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
+                        {
+                            await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: false);
+                            downloaded++;
+                        }
+                    }
                 }
             }
         }
 
-        return new SyncResult { IsSuccess = true, DownloadedCount = downloaded, DeletedCount = deleted };
+        return new SyncResult
+        {
+            IsSuccess = true,
+            DownloadedCount = downloaded,
+            DeletedCount = deleted,
+            ConflictsResolvedCount = conflictsResolved
+        };
     }
 
-    private async Task SyncSettingsInternalAsync(string uid)
+    private async Task SyncSettingsInternalAsync(string uid, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var localSettings = await _localStore.GetSettingsAsync();
         var remoteRecords = await _firestoreClient.DownloadRecordsAsync(uid, CloudSettings.SettingsCollection, 0);
         var appSettingDoc = remoteRecords.FirstOrDefault(r => r.Id == CloudSettings.SettingsDocumentId && !r.IsDeleted);
 
         if (appSettingDoc != null && !string.IsNullOrWhiteSpace(appSettingDoc.JsonPayload))
         {
-            var remoteSettings = JsonSerializer.Deserialize<CloudSettings>(appSettingDoc.JsonPayload);
+            var remoteSettings = JsonSerializer.Deserialize<CloudSettings>(appSettingDoc.JsonPayload, JsonOpts);
             if (remoteSettings != null)
             {
                 if (remoteSettings.UpdatedAt > localSettings.UpdatedAt)
                 {
-                    // Remote is newer, apply to local
+                    // Remote settings are newer -> apply locally
+                    Debug.WriteLine($"[CloudSync] PULL settings {CloudSettings.SettingsDocumentId}: remote newer ({remoteSettings.UpdatedAt} > {localSettings.UpdatedAt})");
                     await _localStore.SaveSettingsAsync(remoteSettings, markForSync: false);
+                    await _localStore.RemoveFromSyncQueueAsync("SETTINGS", CloudSettings.SettingsDocumentId);
+                    return;
+                }
+                else if (localSettings.UpdatedAt > remoteSettings.UpdatedAt)
+                {
+                    // Local settings are newer -> push to cloud
+                    Debug.WriteLine($"[CloudSync] PUSH settings {CloudSettings.SettingsDocumentId}: local newer ({localSettings.UpdatedAt} > {remoteSettings.UpdatedAt})");
+                }
+                else
+                {
+                    // Identical settings versions -> no action
+                    Debug.WriteLine($"[CloudSync] SKIP settings {CloudSettings.SettingsDocumentId}: versions equal ({localSettings.UpdatedAt})");
+                    await _localStore.RemoveFromSyncQueueAsync("SETTINGS", CloudSettings.SettingsDocumentId);
                     return;
                 }
             }
         }
 
-        // Otherwise push local settings to cloud
+        // Push local settings to cloud
         string payload = JsonSerializer.Serialize(localSettings);
         var record = new CloudEntityRecord
         {
@@ -243,6 +566,7 @@ public class CloudSyncService : ISyncService
             UpdatedAt = localSettings.UpdatedAt
         };
         await _firestoreClient.UploadRecordsAsync(uid, CloudSettings.SettingsCollection, new List<CloudEntityRecord> { record });
+        await _localStore.RemoveFromSyncQueueAsync("SETTINGS", CloudSettings.SettingsDocumentId);
     }
 
     public async Task ClearCloudDataAsync()
@@ -266,7 +590,7 @@ public class CloudSyncService : ISyncService
 
     private async Task<string?> SerializeEntityAsync(string entityType, string id)
     {
-        return entityType switch
+        return LocalDataStore.NormalizeEntityType(entityType) switch
         {
             "ACCOUNT" => (await _localStore.GetAccountByIdAsync(id)) is { } a ? JsonSerializer.Serialize(a) : null,
             "TRANSACTION" => (await _localStore.GetTransactionByIdAsync(id)) is { } t ? JsonSerializer.Serialize(t) : null,
@@ -279,42 +603,45 @@ public class CloudSyncService : ISyncService
         };
     }
 
-    private async Task UpsertEntityLocallyAsync(string collection, string jsonPayload)
+    private async Task UpsertEntityLocallyAsync(string collection, string jsonPayload, bool adjustBalance)
     {
         try
         {
             switch (collection)
             {
                 case "accounts":
-                    if (JsonSerializer.Deserialize<Account>(jsonPayload) is { } acc)
+                    if (JsonSerializer.Deserialize<Account>(jsonPayload, JsonOpts) is { } acc)
                         await _localStore.UpsertAccountAsync(acc, markForSync: false);
                     break;
                 case "transactions":
-                    if (JsonSerializer.Deserialize<Transaction>(jsonPayload) is { } tx)
-                        await _localStore.UpsertTransactionAsync(tx, markForSync: false);
+                    if (JsonSerializer.Deserialize<Transaction>(jsonPayload, JsonOpts) is { } tx)
+                        await _localStore.UpsertTransactionAsync(tx, markForSync: false, adjustBalance: adjustBalance);
                     break;
                 case "categories":
-                    if (JsonSerializer.Deserialize<Category>(jsonPayload) is { } cat)
+                    if (JsonSerializer.Deserialize<Category>(jsonPayload, JsonOpts) is { } cat)
                         await _localStore.UpsertCategoryAsync(cat, markForSync: false);
                     break;
                 case "budgets":
-                    if (JsonSerializer.Deserialize<Budget>(jsonPayload) is { } b)
+                    if (JsonSerializer.Deserialize<Budget>(jsonPayload, JsonOpts) is { } b)
                         await _localStore.UpsertBudgetAsync(b, markForSync: false);
                     break;
                 case "recurring_rules":
-                    if (JsonSerializer.Deserialize<RecurringTransaction>(jsonPayload) is { } r)
+                    if (JsonSerializer.Deserialize<RecurringTransaction>(jsonPayload, JsonOpts) is { } r)
                         await _localStore.UpsertRecurringRuleAsync(r, markForSync: false);
                     break;
                 case "goals":
-                    if (JsonSerializer.Deserialize<FinancialGoal>(jsonPayload) is { } g)
+                    if (JsonSerializer.Deserialize<FinancialGoal>(jsonPayload, JsonOpts) is { } g)
                         await _localStore.UpsertGoalAsync(g, markForSync: false);
                     break;
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[CloudSync] Deserialization failure for collection {collection}: {ex.Message}");
+        }
     }
 
-    private async Task DeleteEntityLocallyAsync(string collection, string id)
+    private async Task DeleteEntityLocallyAsync(string collection, string id, bool adjustBalance)
     {
         switch (collection)
         {
@@ -322,7 +649,7 @@ public class CloudSyncService : ISyncService
                 await _localStore.DeleteAccountAsync(id, markForSync: false);
                 break;
             case "transactions":
-                await _localStore.DeleteTransactionAsync(id, markForSync: false);
+                await _localStore.DeleteTransactionAsync(id, markForSync: false, adjustBalance: adjustBalance);
                 break;
             case "categories":
                 await _localStore.DeleteCategoryAsync(id, markForSync: false);
@@ -339,9 +666,9 @@ public class CloudSyncService : ISyncService
         }
     }
 
-    private string GetCollectionName(string entityType)
+    private static string GetCollectionName(string entityType)
     {
-        return entityType switch
+        return LocalDataStore.NormalizeEntityType(entityType) switch
         {
             "ACCOUNT" => "accounts",
             "CATEGORY" => "categories",
@@ -354,9 +681,42 @@ public class CloudSyncService : ISyncService
         };
     }
 
+    private static string GetEntityTypeFromCollection(string collection)
+    {
+        return collection.ToLowerInvariant() switch
+        {
+            "accounts" => "ACCOUNT",
+            "categories" => "CATEGORY",
+            "transactions" => "TRANSACTION",
+            "budgets" => "BUDGET",
+            "recurring_rules" => "RECURRING_RULE",
+            "goals" => "GOAL",
+            "settings" => "SETTINGS",
+            _ => collection.ToUpperInvariant()
+        };
+    }
+
     private void SetStatus(SyncStatus status)
     {
         CurrentStatus = status;
         SyncStatusChanged?.Invoke(this, status);
+    }
+
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        _debounceTimer.Dispose();
+        _periodicTimer.Dispose();
+        _syncLock.Dispose();
+
+        _localStore.DataChanged -= OnLocalDataChanged;
+        _authService.AuthStateChanged -= OnAuthStateChanged;
+        try
+        {
+            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+        }
+        catch { }
     }
 }

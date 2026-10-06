@@ -35,6 +35,9 @@ public class FinancialGoal
     [JsonPropertyName("createdAt")]
     public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+    [JsonPropertyName("updatedAt")]
+    public long UpdatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
     [JsonIgnore]
     public double ProgressPercentage
     {

@@ -66,6 +66,9 @@ public class Transaction
     [JsonPropertyName("createdAt")]
     public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+    [JsonPropertyName("updatedAt")]
+    public long UpdatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
     [JsonPropertyName("exchangeRate")]
     public double? ExchangeRate { get; set; }
 

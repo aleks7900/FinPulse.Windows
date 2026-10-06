@@ -83,6 +83,12 @@ public class RecurringTransaction
     [JsonPropertyName("notes")]
     public string? Notes { get; set; }
 
+    [JsonPropertyName("createdAt")]
+    public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    [JsonPropertyName("updatedAt")]
+    public long UpdatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
     [JsonIgnore]
     public DateTime NextDueDateTime => DateTimeOffset.FromUnixTimeMilliseconds(NextDueDate).LocalDateTime;
 

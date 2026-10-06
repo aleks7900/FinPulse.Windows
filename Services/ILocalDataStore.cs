@@ -12,6 +12,12 @@ public record SyncQueueItem(
     long Timestamp
 );
 
+public record LocalTombstone(
+    string EntityType,
+    string EntityId,
+    long DeletedAt
+);
+
 public interface ILocalDataStore
 {
     event EventHandler? DataChanged;
@@ -27,8 +33,8 @@ public interface ILocalDataStore
     // Transactions
     Task<List<Transaction>> GetTransactionsAsync();
     Task<Transaction?> GetTransactionByIdAsync(string id);
-    Task UpsertTransactionAsync(Transaction transaction, bool markForSync = true);
-    Task DeleteTransactionAsync(string id, bool markForSync = true);
+    Task UpsertTransactionAsync(Transaction transaction, bool markForSync = true, bool adjustBalance = true);
+    Task DeleteTransactionAsync(string id, bool markForSync = true, bool adjustBalance = true);
 
     // Categories
     Task<List<Category>> GetCategoriesAsync();
@@ -58,7 +64,15 @@ public interface ILocalDataStore
     Task<CloudSettings> GetSettingsAsync();
     Task SaveSettingsAsync(CloudSettings settings, bool markForSync = true);
 
+    // Metadata & Tombstones
+    Task<long?> GetEntityUpdatedAtAsync(string entityType, string id);
+    Task<LocalTombstone?> GetTombstoneAsync(string entityType, string id);
+    Task<List<LocalTombstone>> GetAllTombstonesAsync();
+    Task RecordTombstoneAsync(string entityType, string id, long deletedAt, bool markForSync = true);
+    Task ClearTombstoneAsync(string entityType, string id);
+
     // Sync queue
+    void EnqueueSync(string entityType, string entityId, string action, long? timestamp = null);
     Task<List<SyncQueueItem>> GetPendingSyncItemsAsync();
     Task RemoveFromSyncQueueAsync(string entityType, string entityId);
     Task ClearAllDataAsync();

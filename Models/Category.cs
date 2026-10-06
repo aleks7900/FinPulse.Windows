@@ -36,6 +36,12 @@ public class Category
     [JsonPropertyName("sortOrder")]
     public int SortOrder { get; set; } = 0;
 
+    [JsonPropertyName("createdAt")]
+    public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    [JsonPropertyName("updatedAt")]
+    public long UpdatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
     [JsonIgnore]
     public string HexColorString => $"#{((uint)ColorHex):X8}";
 
