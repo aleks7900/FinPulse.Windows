@@ -22,7 +22,10 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
         var loc = App.Services.GetService<ILocalizationService>() ?? LocalizationService.Current;
-        Title = loc.GetString("App_Title", "FinPulse Companion");
+        loc.LanguageChanged += (s, e) =>
+        {
+            DispatcherQueue.TryEnqueue(RefreshLocalizedStrings);
+        };
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
@@ -34,8 +37,53 @@ public sealed partial class MainWindow : Window
         Activated += MainWindow_Activated;
         Closed += MainWindow_Closed;
 
+        RefreshLocalizedStrings();
+
         // Initial navigation
         NavigateToTag(!string.IsNullOrWhiteSpace(initialTag) ? initialTag : "overview");
+    }
+
+    public void RefreshLocalizedStrings()
+    {
+        var loc = App.Services.GetService<ILocalizationService>() ?? LocalizationService.Current;
+        Title = loc.GetString("App_Title", "FinPulse Companion");
+        AppTitleBar.Title = loc.GetString("AppTitleBar.Title", "FinPulse Companion");
+        AppTitleBar.Subtitle = loc.GetString("AppTitleBar.Subtitle", "Windows 11 Edition");
+
+        foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
+        {
+            if (item.Tag is string tag)
+            {
+                string key = tag switch
+                {
+                    "overview" => "Nav_Overview.Content",
+                    "accounts" => "Nav_Accounts.Content",
+                    "transactions" => "Nav_Transactions.Content",
+                    "analytics" => "Nav_Analytics.Content",
+                    "budgets" => "Nav_Budgets.Content",
+                    "goals" => "Nav_Goals.Content",
+                    "recurring" => "Nav_Recurring.Content",
+                    "categories" => "Nav_Categories.Content",
+                    _ => ""
+                };
+                if (!string.IsNullOrEmpty(key))
+                {
+                    item.Content = loc.GetString(key, item.Content?.ToString());
+                }
+            }
+        }
+
+        if (NavView.SettingsItem is NavigationViewItem settingsItem)
+        {
+            settingsItem.Content = loc.GetString("Nav_Settings.Content", "Settings");
+        }
+
+        // Refresh current page if loaded
+        if (NavFrame.CurrentSourcePageType != null)
+        {
+            var curType = NavFrame.CurrentSourcePageType;
+            NavFrame.Navigate(curType);
+        }
     }
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)

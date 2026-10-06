@@ -162,6 +162,14 @@ public class ShellViewModel : ViewModelBase
         {
             UpdateAllSyncProperties();
         };
+
+        LocalizationService.Current.LanguageChanged += (s, e) =>
+        {
+            UpdateAllSyncProperties();
+            OnPropertyChanged(nameof(GlobalSyncStatusLabel));
+            OnPropertyChanged(nameof(GlobalSyncTooltip));
+            OnPropertyChanged(nameof(SyncStatusBadge));
+        };
     }
 
     private async Task ExecuteGlobalSyncActionAsync()

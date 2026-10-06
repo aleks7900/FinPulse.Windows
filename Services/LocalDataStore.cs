@@ -817,6 +817,40 @@ public class LocalDataStore : ILocalDataStore
 
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    public async Task CleanupSampleDataIfPresentAsync()
+    {
+        // If the only accounts are the initial sample seeds (acc_main, acc_savings)
+        if (_accounts.ContainsKey("acc_main") && _accounts.ContainsKey("acc_savings") && _accounts.Count == 2)
+        {
+            _accounts.TryRemove("acc_main", out _);
+            _accounts.TryRemove("acc_savings", out _);
+            await SaveDictionaryAsync("accounts.json", _accounts);
+
+            string[] sampleTxs = ["tx_1", "tx_2", "tx_3", "tx_4"];
+            foreach (var txId in sampleTxs)
+            {
+                _transactions.TryRemove(txId, out _);
+            }
+            await SaveDictionaryAsync("transactions.json", _transactions);
+
+            string[] sampleBudgets = ["b_food", "b_shopping"];
+            foreach (var bId in sampleBudgets)
+            {
+                _budgets.TryRemove(bId, out _);
+            }
+            await SaveDictionaryAsync("budgets.json", _budgets);
+
+            string[] sampleRec = ["rec_internet", "rec_netflix"];
+            foreach (var rId in sampleRec)
+            {
+                _recurringRules.TryRemove(rId, out _);
+            }
+            await SaveDictionaryAsync("recurring.json", _recurringRules);
+
+            DataChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
     #endregion
 
     #region File I/O Helpers

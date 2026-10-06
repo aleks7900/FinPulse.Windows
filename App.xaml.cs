@@ -75,6 +75,7 @@ public partial class App : Application
         try
         {
             var localStore = Services.GetRequiredService<ILocalDataStore>();
+            localStore.InitializeAsync().GetAwaiter().GetResult();
             var settings = localStore.GetSettingsAsync().GetAwaiter().GetResult();
             var loc = Services.GetRequiredService<ILocalizationService>();
             loc.ApplyLanguage(settings.SelectedLanguage);

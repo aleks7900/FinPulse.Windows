@@ -186,15 +186,19 @@ public class CloudSyncService : ISyncService, IDisposable
         try
         {
             SetStatus(SyncStatus.SYNCING);
+            Debug.WriteLine($"[CloudSync] === Sync START === Trigger: FullSync, UID: {user.Uid}, LastSync: {LastSyncTimestamp}");
 
             // Step 1: PUSH local pending changes in safe dependency order
             var uploadRes = await UploadPendingChangesInternalAsync(user.Uid, cancellationToken);
+            Debug.WriteLine($"[CloudSync] Step 1 PUSH completed: Uploaded={uploadRes.UploadedCount}, Deleted={uploadRes.DeletedCount}");
 
             // Step 2: PULL remote changes in safe dependency order and reconcile per-entity (LWW)
             var downloadRes = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp, cancellationToken);
+            Debug.WriteLine($"[CloudSync] Step 2 PULL completed: Downloaded={downloadRes.DownloadedCount}, Deleted={downloadRes.DeletedCount}, ConflictsResolved={downloadRes.ConflictsResolvedCount}");
 
             // Step 3: Reconcile Settings
             await SyncSettingsInternalAsync(user.Uid, cancellationToken);
+            Debug.WriteLine($"[CloudSync] Step 3 Settings reconciliation completed.");
 
             long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             LastSyncTimestamp = now;
@@ -205,7 +209,7 @@ public class CloudSyncService : ISyncService, IDisposable
 
             SetStatus(_pendingCount > 0 ? SyncStatus.PENDING_CHANGES : SyncStatus.SUCCESS);
 
-            return new SyncResult
+            var finalResult = new SyncResult
             {
                 IsSuccess = true,
                 UploadedCount = uploadRes.UploadedCount,
@@ -214,16 +218,18 @@ public class CloudSyncService : ISyncService, IDisposable
                 ConflictsResolvedCount = uploadRes.ConflictsResolvedCount + downloadRes.ConflictsResolvedCount,
                 SyncedAt = now
             };
+            Debug.WriteLine($"[CloudSync] === Sync COMPLETED === Result: Success, TotalUploaded: {finalResult.UploadedCount}, TotalDownloaded: {finalResult.DownloadedCount}, TotalDeleted: {finalResult.DeletedCount}");
+            return finalResult;
         }
         catch (OperationCanceledException)
         {
-            Debug.WriteLine("[CloudSync] Synchronization cancelled.");
+            Debug.WriteLine($"[CloudSync] === Sync CANCELLED === UID: {user.Uid}");
             return new SyncResult { IsSuccess = false, ErrorMessage = "Sync operation cancelled" };
         }
         catch (Exception ex)
         {
             LastErrorMessage = ex.Message;
-            Debug.WriteLine($"[CloudSync] Sync failed: {ex.Message}");
+            Debug.WriteLine($"[CloudSync] === Sync FAILED === UID: {user?.Uid}, Error: {ex.Message}");
             SetStatus(SyncStatus.ERROR);
             return new SyncResult { IsSuccess = false, ErrorMessage = ex.Message };
         }
@@ -395,6 +401,12 @@ public class CloudSyncService : ISyncService, IDisposable
 
             string entityType = GetEntityTypeFromCollection(collection);
             var records = await _firestoreClient.DownloadRecordsAsync(uid, collection, sinceTimestamp);
+            Debug.WriteLine($"[CloudSync] Pulled {records.Count} records from collection '{collection}' for UID '{uid}'");
+
+            if (records.Count > 0 && records.Any(r => !r.IsDeleted))
+            {
+                await _localStore.CleanupSampleDataIfPresentAsync();
+            }
 
             foreach (var rec in records)
             {

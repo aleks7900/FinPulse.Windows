@@ -136,6 +136,7 @@ public class FirebaseAuthService : IAuthService
             IsAnonymous = false
         };
 
+        Debug.WriteLine($"[Auth] Google authentication succeeded. Firebase UID (localId): {localId}, Email: {email}, Provider: google.com");
         await SetSessionAsync(session);
         return session;
     }

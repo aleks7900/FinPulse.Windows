@@ -78,4 +78,5 @@ public interface ILocalDataStore
     Task<List<SyncQueueItem>> GetPendingSyncItemsAsync();
     Task RemoveFromSyncQueueAsync(string entityType, string entityId);
     Task ClearAllDataAsync();
+    Task CleanupSampleDataIfPresentAsync();
 }

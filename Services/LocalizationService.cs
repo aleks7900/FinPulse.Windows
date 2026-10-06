@@ -93,8 +93,8 @@ public class LocalizationService : ILocalizationService
             }
             catch { }
 
-            CultureInfo.DefaultThreadCurrentCulture = null;
-            CultureInfo.DefaultThreadCurrentUICulture = null;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InstalledUICulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InstalledUICulture;
             Thread.CurrentThread.CurrentCulture = CultureInfo.InstalledUICulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
         }
