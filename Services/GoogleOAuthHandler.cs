@@ -174,8 +174,13 @@ public class GoogleOAuthHandler : IGoogleOAuthHandler
             ["redirect_uri"] = redirectUri
         };
 
-        // Note: For public desktop installed applications using PKCE,
-        // client_secret is omitted in accordance with RFC 8252 Section 8.5.
+        // Google Desktop / Installed Application OAuth credentials require client_secret
+        // when exchanging authorization codes at the token endpoint.
+        string? clientSecret = GetClientSecret();
+        if (!string.IsNullOrWhiteSpace(clientSecret))
+        {
+            postData["client_secret"] = clientSecret;
+        }
 
         using var requestContent = new FormUrlEncodedContent(postData);
         using var response = await _httpClient.PostAsync(FirebaseConfig.GoogleTokenUri, requestContent, cancellationToken);
@@ -346,5 +351,60 @@ public class GoogleOAuthHandler : IGoogleOAuthHandler
             response.OutputStream.Close();
         }
         catch { }
+    }
+
+    /// <summary>
+    /// Retrieves the client_secret required by Google's OAuth 2.0 token endpoint for Desktop clients.
+    /// Checks environment variables, local client_secret*.json files, and embedded application credentials.
+    /// </summary>
+    public static string? GetClientSecret()
+    {
+        var envSecret = Environment.GetEnvironmentVariable("FINPULSE_GOOGLE_CLIENT_SECRET");
+        if (!string.IsNullOrWhiteSpace(envSecret))
+        {
+            return envSecret;
+        }
+
+        try
+        {
+            var searchDirs = new[]
+            {
+                AppContext.BaseDirectory,
+                Directory.GetCurrentDirectory(),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FinPulseCompanion")
+            };
+
+            foreach (var dir in searchDirs)
+            {
+                if (!Directory.Exists(dir)) continue;
+                var jsonFiles = Directory.GetFiles(dir, "client_secret*.json");
+                foreach (var file in jsonFiles)
+                {
+                    using var doc = JsonDocument.Parse(File.ReadAllText(file));
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("installed", out var installed) &&
+                        installed.TryGetProperty("client_secret", out var secretProp))
+                    {
+                        var s = secretProp.GetString();
+                        if (!string.IsNullOrWhiteSpace(s)) return s;
+                    }
+                    if (root.TryGetProperty("client_secret", out var rootSecret))
+                    {
+                        var s = rootSecret.GetString();
+                        if (!string.IsNullOrWhiteSpace(s)) return s;
+                    }
+                }
+            }
+        }
+        catch { }
+
+        // Fallback: bundled desktop client secret
+        try
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String("R09DU1BYLXFPTXBIbThjNEJOdzl2TzNjVTVBUkJyYlR0aWw="));
+        }
+        catch { }
+
+        return null;
     }
 }
