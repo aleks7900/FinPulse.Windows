@@ -62,7 +62,7 @@ public class FinancialGoal
     public DateTime TargetDateTime => DateTimeOffset.FromUnixTimeMilliseconds(TargetDate).LocalDateTime;
 
     [JsonIgnore]
-    public string FormattedTargetDate => TargetDateTime.ToString("MMM dd, yyyy");
+    public string FormattedTargetDate => TargetDateTime.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
 
     [JsonIgnore]
     public string HexColorString => $"#{((uint)ColorHex):X8}";

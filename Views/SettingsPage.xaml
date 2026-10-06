@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:FinPulse.Windows.Models"
+    xmlns:services="using:FinPulse.Windows.Services"
     xmlns:vm="using:FinPulse.Windows.ViewModels"
     mc:Ignorable="d">
 
@@ -13,8 +14,8 @@
 
             <!-- Page Header -->
             <StackPanel Spacing="4">
-                <TextBlock Text="Settings" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                <TextBlock Text="Preferences, multi-currency defaults, and cloud synchronization" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Settings_HeaderTitle" Text="Settings" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                <TextBlock x:Uid="Settings_HeaderSubtitle" Text="Preferences, multi-currency defaults, and cloud synchronization" Style="{StaticResource PageSubtitleTextBlockStyle}" />
             </StackPanel>
 
             <!-- 1. Google Account & Cloud Identity Section -->
@@ -22,8 +23,8 @@
                 <StackPanel Spacing="16">
                     <Grid>
                         <StackPanel Spacing="2">
-                            <TextBlock Text="Google Account &amp; Cloud Identity" Style="{StaticResource SectionHeaderTextBlockStyle}" />
-                            <TextBlock Text="Connect your Google Account to synchronize across Android and Windows via Cloud Firestore"
+                            <TextBlock x:Uid="Settings_GoogleSection_Title" Text="Google Account &amp; Cloud Identity" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                            <TextBlock x:Uid="Settings_GoogleSection_Subtitle" Text="Connect your Google Account to synchronize across Android and Windows via Cloud Firestore"
                                        FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                     </Grid>
@@ -49,7 +50,7 @@
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="{x:Bind ViewModel.CurrentUser.DisplayName, Mode=OneWay}" FontWeight="Bold" FontSize="15" />
                                         <Border Background="{StaticResource FinPulseLightGreenBrush}" CornerRadius="4" Padding="6,1">
-                                            <TextBlock Text="Google Account" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource FinPulseDarkGreenBrush}" />
+                                            <TextBlock x:Uid="Settings_GoogleAccountBadge" Text="Google Account" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource FinPulseDarkGreenBrush}" />
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="{x:Bind ViewModel.CurrentUser.Email, Mode=OneWay}" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -59,7 +60,7 @@
                                 <Button Grid.Column="2" VerticalAlignment="Center" Command="{x:Bind ViewModel.SignOutCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <FontIcon Glyph="&#xE8F8;" FontSize="13" />
-                                        <TextBlock Text="Sign Out" />
+                                        <TextBlock x:Uid="Settings_SignOutButton" Text="Sign Out" />
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -83,8 +84,8 @@
                                 </Border>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="Not Signed In" FontWeight="SemiBold" FontSize="14" />
-                                    <TextBlock Text="Sign in with your Google account to enable real-time cloud sync with Android."
+                                    <TextBlock x:Uid="Settings_NotSignedIn" Text="Not Signed In" FontWeight="SemiBold" FontSize="14" />
+                                    <TextBlock x:Uid="Settings_SignInPrompt" Text="Sign in with your Google account to enable real-time cloud sync with Android."
                                                FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
 
@@ -92,14 +93,14 @@
                                     <Button Click="SignInGoogleButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Text="G" FontWeight="Bold" FontSize="14" Foreground="White" />
-                                            <TextBlock Text="Sign in with Google" FontWeight="SemiBold" />
+                                            <TextBlock x:Uid="Settings_SignInGoogleButton" Text="Sign in with Google" FontWeight="SemiBold" />
                                         </StackPanel>
                                     </Button>
 
                                     <Button Click="SignInEmailButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon Glyph="&#xE715;" FontSize="13" />
-                                            <TextBlock Text="Email" />
+                                            <TextBlock x:Uid="Settings_SignInEmailButton" Text="Email" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
@@ -112,20 +113,20 @@
             <!-- 2. Appearance Section -->
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Appearance &amp; Display" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Settings_Appearance_Title" Text="Appearance &amp; Display" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                     <Grid>
                         <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Application Theme" FontWeight="SemiBold" FontSize="14" />
-                            <TextBlock Text="Select your preferred Fluent color theme" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Settings_Theme_Label" Text="Application Theme" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_Theme_Desc" Text="Select your preferred Fluent color theme" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
 
                         <ComboBox HorizontalAlignment="Right" Width="140"
                                   SelectedValue="{x:Bind ViewModel.SelectedTheme, Mode=TwoWay}"
-                                  SelectedValuePath="Content">
-                            <ComboBoxItem Content="System" />
-                            <ComboBoxItem Content="Light" />
-                            <ComboBoxItem Content="Dark" />
+                                  SelectedValuePath="Tag">
+                            <ComboBoxItem x:Uid="Theme_System" Tag="System" Content="System" />
+                            <ComboBoxItem x:Uid="Theme_Light" Tag="Light" Content="Light" />
+                            <ComboBoxItem x:Uid="Theme_Dark" Tag="Dark" Content="Dark" />
                         </ComboBox>
                     </Grid>
 
@@ -133,8 +134,8 @@
 
                     <Grid>
                         <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Privacy Mode" FontWeight="SemiBold" FontSize="14" />
-                            <TextBlock Text="Hide sensitive monetary balances on dashboard" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Settings_Privacy_Label" Text="Privacy Mode" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_Privacy_Desc" Text="Hide sensitive monetary balances on dashboard" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
 
                         <ToggleSwitch HorizontalAlignment="Right" IsOn="{x:Bind ViewModel.HideBalances, Mode=TwoWay}" />
@@ -142,15 +143,42 @@
                 </StackPanel>
             </Border>
 
-            <!-- 2. Currency Section -->
+            <!-- 3. Language & Region Section -->
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="Currency &amp; Regional Formatting" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Settings_Language_Title" Text="Language &amp; Region" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                     <Grid>
                         <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Global Base Currency" FontWeight="SemiBold" FontSize="14" />
-                            <TextBlock Text="Default currency for aggregated balances and new accounts" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Settings_Language_Label" Text="Application Language" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_Language_Desc" Text="Choose your preferred display language" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <ComboBox HorizontalAlignment="Right" Width="200"
+                                  ItemsSource="{x:Bind ViewModel.AvailableLanguages, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="services:LanguageOption">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{x:Bind NativeName}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{x:Bind EnglishName}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. Currency Section -->
+            <Border Style="{StaticResource FluentCardBorder}">
+                <StackPanel Spacing="14">
+                    <TextBlock x:Uid="Settings_Currency_Title" Text="Currency &amp; Regional Formatting" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+
+                    <Grid>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock x:Uid="Settings_BaseCurrency_Label" Text="Global Base Currency" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_BaseCurrency_Desc" Text="Default currency for aggregated balances and new accounts" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
 
                         <ComboBox HorizontalAlignment="Right" Width="200"
@@ -170,15 +198,15 @@
                 </StackPanel>
             </Border>
 
-            <!-- 3. Cloud Sync Section -->
+            <!-- 5. Cloud Sync Section -->
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="14">
                     <Grid>
-                        <TextBlock Text="Firebase Cloud Sync" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                        <TextBlock x:Uid="Settings_Sync_Title" Text="Firebase Cloud Sync" Style="{StaticResource SectionHeaderTextBlockStyle}" />
                         <Button HorizontalAlignment="Right" Command="{x:Bind ViewModel.SyncNowCommand}" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <FontIcon Glyph="&#xE72C;" FontSize="13" />
-                                <TextBlock Text="Sync Now" />
+                                <TextBlock x:Uid="Settings_SyncNowButton" Text="Sync Now" />
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -192,34 +220,32 @@
 
                         <Border Grid.Column="0" Style="{StaticResource StatCardBorder}">
                             <StackPanel Spacing="2">
-                                <TextBlock Text="STATUS" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock x:Uid="Settings_SyncStatus_Label" Text="STATUS" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{x:Bind ViewModel.SyncStatusText, Mode=OneWay}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource FinPulsePrimaryBrush}" />
                             </StackPanel>
                         </Border>
 
                         <Border Grid.Column="1" Style="{StaticResource StatCardBorder}">
                             <StackPanel Spacing="2">
-                                <TextBlock Text="LAST SYNCED" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock x:Uid="Settings_LastSynced_Label" Text="LAST SYNCED" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{x:Bind ViewModel.LastSyncText, Mode=OneWay}" FontSize="13" FontWeight="SemiBold" />
                             </StackPanel>
                         </Border>
 
                         <Border Grid.Column="2" Style="{StaticResource StatCardBorder}">
                             <StackPanel Spacing="2">
-                                <TextBlock Text="PENDING CHANGES" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock x:Uid="Settings_PendingChanges_Label" Text="PENDING CHANGES" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="{x:Bind ViewModel.PendingChanges, Mode=OneWay}" FontSize="14" FontWeight="Bold" />
                             </StackPanel>
                         </Border>
                     </Grid>
 
-                    <TextBlock Text="FinPulse Companion synchronizes with Google Cloud Firestore project 'finpulse-cloud' using two-way Last-Write-Wins conflict resolution."
+                    <TextBlock x:Uid="Settings_Sync_Description" Text="FinPulse Companion synchronizes with Google Cloud Firestore project 'finpulse-cloud' using two-way Last-Write-Wins conflict resolution."
                                FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 
-
-
-            <!-- 5. About Section -->
+            <!-- 6. About Section -->
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="10">
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
@@ -227,12 +253,12 @@
                             <FontIcon Glyph="&#xE8C7;" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel>
-                            <TextBlock Text="FinPulse Companion" FontWeight="Bold" FontSize="15" />
-                            <TextBlock Text="Version 1.0.0 • Windows 11 Fluent Edition" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Settings_About_AppName" Text="FinPulse Companion" FontWeight="Bold" FontSize="15" />
+                            <TextBlock x:Uid="Settings_About_Version" Text="Version 1.0.0 • Windows 11 Fluent Edition" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                     </StackPanel>
 
-                    <TextBlock Text="Native companion to the FinPulse Android application. Engineered with C#, WinUI 3, Windows App SDK, Mica material, and institutional double-entry financial bookkeeping."
+                    <TextBlock x:Uid="Settings_About_Description" Text="Native companion to the FinPulse Android application. Engineered with C#, WinUI 3, Windows App SDK, Mica material, and institutional double-entry financial bookkeeping."
                                FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

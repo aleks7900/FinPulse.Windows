@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using FinPulse.Windows.Services;
 using FinPulse.Windows.ViewModels;
 
 namespace FinPulse.Windows.Views;
@@ -16,6 +17,8 @@ public sealed partial class TransactionsPage : Page
         InitializeComponent();
         ViewModel = App.Services.GetRequiredService<TransactionsViewModel>();
         DataContext = ViewModel;
+
+        ToolTipService.SetToolTip(ResetFiltersBtn, LocalizationService.Current.GetString("Transactions_ResetFilters_Tooltip"));
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -44,12 +47,13 @@ public sealed partial class TransactionsPage : Page
     {
         if (sender is Button btn && btn.Tag is string txId)
         {
+            var loc = LocalizationService.Current;
             var dialog = new ContentDialog
             {
-                Title = "Delete Transaction?",
-                Content = "Are you sure you want to delete this transaction? Account balances will update automatically.",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = loc.GetString("Transactions_Delete_DialogTitle"),
+                Content = loc.GetString("Transactions_Delete_DialogContent"),
+                PrimaryButtonText = loc.GetString("Common_Delete"),
+                CloseButtonText = loc.GetString("Common_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = XamlRoot
             };

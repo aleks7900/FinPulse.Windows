@@ -18,15 +18,15 @@
         <!-- Page Header -->
         <Grid Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Spacing="4">
-                <TextBlock Text="Transactions Ledger" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                <TextBlock Text="Comprehensive table view with multi-column filtering and search" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Transactions_HeaderTitle" Text="Transactions Ledger" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                <TextBlock x:Uid="Transactions_HeaderSubtitle" Text="Comprehensive table view with multi-column filtering and search" Style="{StaticResource PageSubtitleTextBlockStyle}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Click="AddTransactionButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE710;" FontSize="14" />
-                        <TextBlock Text="Add Transaction" FontWeight="SemiBold" />
+                        <TextBlock x:Uid="Transactions_AddButton" Text="Add Transaction" FontWeight="SemiBold" />
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -45,23 +45,23 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Search Box -->
-                <AutoSuggestBox x:Name="SearchBox" Grid.Column="0" PlaceholderText="Search merchant, notes..."
+                <AutoSuggestBox x:Name="SearchBox" x:Uid="Transactions_SearchBox" Grid.Column="0" PlaceholderText="Search merchant, notes..."
                                 QueryIcon="Find"
                                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <!-- Type Filter -->
                 <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
                           SelectedValue="{x:Bind ViewModel.SelectedTypeFilter, Mode=TwoWay}"
-                          SelectedValuePath="Content">
-                    <ComboBoxItem Content="All" IsSelected="True" />
-                    <ComboBoxItem Content="Expense" />
-                    <ComboBoxItem Content="Income" />
-                    <ComboBoxItem Content="Transfer" />
-                    <ComboBoxItem Content="Refund" />
+                          SelectedValuePath="Tag">
+                    <ComboBoxItem x:Uid="Common_All" Tag="All" Content="All" IsSelected="True" />
+                    <ComboBoxItem x:Uid="Common_Expense" Tag="Expense" Content="Expense" />
+                    <ComboBoxItem x:Uid="Common_Income" Tag="Income" Content="Income" />
+                    <ComboBoxItem x:Uid="Common_Transfer" Tag="Transfer" Content="Transfer" />
+                    <ComboBoxItem x:Uid="Common_Refund" Tag="Refund" Content="Refund" />
                 </ComboBox>
 
                 <!-- Account Filter -->
-                <ComboBox Grid.Column="2" HorizontalAlignment="Stretch" PlaceholderText="All Accounts"
+                <ComboBox x:Uid="Transactions_Filter_AllAccounts" Grid.Column="2" HorizontalAlignment="Stretch" PlaceholderText="All Accounts"
                           ItemsSource="{x:Bind ViewModel.Accounts, Mode=OneWay}"
                           SelectedItem="{x:Bind ViewModel.SelectedAccountFilter, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
@@ -72,7 +72,7 @@
                 </ComboBox>
 
                 <!-- Category Filter -->
-                <ComboBox Grid.Column="3" HorizontalAlignment="Stretch" PlaceholderText="All Categories"
+                <ComboBox x:Uid="Transactions_Filter_AllCategories" Grid.Column="3" HorizontalAlignment="Stretch" PlaceholderText="All Categories"
                           ItemsSource="{x:Bind ViewModel.Categories, Mode=OneWay}"
                           SelectedItem="{x:Bind ViewModel.SelectedCategoryFilter, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
@@ -85,15 +85,15 @@
                 <!-- Date Range Preset -->
                 <ComboBox Grid.Column="4" HorizontalAlignment="Stretch"
                           SelectedValue="{x:Bind ViewModel.SelectedDateFilter, Mode=TwoWay}"
-                          SelectedValuePath="Content">
-                    <ComboBoxItem Content="All Time" IsSelected="True" />
-                    <ComboBoxItem Content="This Month" />
-                    <ComboBoxItem Content="Last Month" />
-                    <ComboBoxItem Content="This Year" />
+                          SelectedValuePath="Tag">
+                    <ComboBoxItem x:Uid="Transactions_Date_AllTime" Tag="All Time" Content="All Time" IsSelected="True" />
+                    <ComboBoxItem x:Uid="Transactions_Date_ThisMonth" Tag="This Month" Content="This Month" />
+                    <ComboBoxItem x:Uid="Transactions_Date_LastMonth" Tag="Last Month" Content="Last Month" />
+                    <ComboBoxItem x:Uid="Transactions_Date_ThisYear" Tag="This Year" Content="This Year" />
                 </ComboBox>
 
                 <!-- Reset Filters Button -->
-                <Button Grid.Column="5" HorizontalAlignment="Right" Click="ClearFilters_Click" ToolTipService.ToolTip="Reset Filters">
+                <Button x:Name="ResetFiltersBtn" Grid.Column="5" HorizontalAlignment="Right" Click="ClearFilters_Click" ToolTipService.ToolTip="Reset Filters">
                     <FontIcon Glyph="&#xE777;" FontSize="14" />
                 </Button>
             </Grid>
@@ -122,12 +122,12 @@
                             <ColumnDefinition Width="50" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" Text="DATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="DESCRIPTION / MERCHANT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Column="2" Text="CATEGORY" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Column="3" Text="ACCOUNT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Column="4" Text="TYPE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Grid.Column="5" Text="AMOUNT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" />
+                        <TextBlock x:Uid="Transactions_Col_Date" Grid.Column="0" Text="DATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Transactions_Col_Description" Grid.Column="1" Text="DESCRIPTION / MERCHANT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Transactions_Col_Category" Grid.Column="2" Text="CATEGORY" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Transactions_Col_Account" Grid.Column="3" Text="ACCOUNT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Transactions_Col_Type" Grid.Column="4" Text="TYPE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Transactions_Col_Amount" Grid.Column="5" Text="AMOUNT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" />
                         <TextBlock Grid.Column="6" Text="" />
                     </Grid>
                 </Border>
@@ -170,7 +170,7 @@
 
                                 <!-- Type Badge -->
                                 <Border Grid.Column="4" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="8,2" CornerRadius="4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
-                                    <TextBlock Text="{x:Bind Type}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind TypeDisplayName}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </Border>
 
                                 <!-- Amount -->
@@ -191,14 +191,14 @@
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="16,8">
                     <Grid>
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <TextBlock Text="Matching Records:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Transactions_Footer_MatchingRecords" Text="Matching Records:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <TextBlock Text="{x:Bind ViewModel.FilteredTransactions.Count, Mode=OneWay}" FontSize="12" FontWeight="SemiBold" />
-                            <TextBlock Text="of" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <TextBlock x:Uid="Common_Of" Text="of" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                             <TextBlock Text="{x:Bind ViewModel.TotalTransactionsCount, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <TextBlock Text="Net Total:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Transactions_Footer_NetTotal" Text="Net Total:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <TextBlock Text="{x:Bind ViewModel.FilteredTotalAmountString, Mode=OneWay}" FontSize="13" FontWeight="Bold" />
                         </StackPanel>
                     </Grid>

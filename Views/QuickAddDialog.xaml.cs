@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using FinPulse.Windows.Models;
+using FinPulse.Windows.Services;
 using FinPulse.Windows.ViewModels;
 
 namespace FinPulse.Windows.Views;
@@ -15,16 +16,16 @@ public sealed partial class QuickAddDialog : ContentDialog
 
     public string AmountString
     {
-        get => ViewModel.Amount > 0 ? ViewModel.Amount.ToString("0.00", CultureInfo.InvariantCulture) : string.Empty;
+        get => ViewModel.Amount > 0 ? ViewModel.Amount.ToString("0.00", CultureInfo.CurrentCulture) : string.Empty;
         set
         {
-            if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var amt))
-            {
-                ViewModel.Amount = amt;
-            }
-            else if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var amtLocal))
+            if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var amtLocal))
             {
                 ViewModel.Amount = amtLocal;
+            }
+            else if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var amt))
+            {
+                ViewModel.Amount = amt;
             }
         }
     }
@@ -54,6 +55,10 @@ public sealed partial class QuickAddDialog : ContentDialog
     public QuickAddDialog()
     {
         InitializeComponent();
+        Title = LocalizationService.Current.GetString("QuickAdd_Title.Title");
+        PrimaryButtonText = LocalizationService.Current.GetString("QuickAdd_SaveButton.Content");
+        CloseButtonText = LocalizationService.Current.GetString("Common_Cancel");
+
         ViewModel = App.Services.GetRequiredService<QuickAddViewModel>();
         DataContext = ViewModel;
 

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using FinPulse.Windows.Models;
+using FinPulse.Windows.Services;
 using FinPulse.Windows.ViewModels;
 
 namespace FinPulse.Windows.Views;
@@ -29,13 +30,26 @@ public sealed partial class GoalsPage : Page
 
     private async void AddGoalButton_Click(object sender, RoutedEventArgs e)
     {
-        var titleBox = new TextBox { Header = "Goal Title", PlaceholderText = "e.g. New Laptop, Vacation, Emergency Buffer" };
-        var targetBox = new TextBox { Header = "Target Amount", PlaceholderText = "0.00" };
-        var datePicker = new DatePicker { Header = "Target Deadline Date", Date = DateTimeOffset.Now.AddMonths(6) };
+        var loc = LocalizationService.Current;
+        var titleBox = new TextBox
+        {
+            Header = loc.GetString("Goals_Dialog_TitleHeader"),
+            PlaceholderText = loc.GetString("Goals_Dialog_TitlePlaceholder")
+        };
+        var targetBox = new TextBox
+        {
+            Header = loc.GetString("Goals_Dialog_AmountHeader"),
+            PlaceholderText = loc.GetString("Common_AmountPlaceholder")
+        };
+        var datePicker = new DatePicker
+        {
+            Header = loc.GetString("Goals_Dialog_DeadlineHeader"),
+            Date = DateTimeOffset.Now.AddMonths(6)
+        };
 
         var accPicker = new ComboBox
         {
-            Header = "Linked Account (Optional)",
+            Header = loc.GetString("Goals_Dialog_LinkedAccountHeader"),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = ViewModel.Accounts,
             DisplayMemberPath = "Name"
@@ -49,10 +63,10 @@ public sealed partial class GoalsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Create Financial Goal",
+            Title = loc.GetString("Goals_Dialog_CreateTitle"),
             Content = panel,
-            PrimaryButtonText = "Create Goal",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = loc.GetString("Goals_Dialog_CreateButton"),
+            CloseButtonText = loc.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -60,8 +74,13 @@ public sealed partial class GoalsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            decimal.TryParse(targetBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var target);
-            string title = string.IsNullOrWhiteSpace(titleBox.Text) ? "Savings Goal" : titleBox.Text.Trim();
+            if (!decimal.TryParse(targetBox.Text, NumberStyles.Any, CultureInfo.CurrentCulture, out var target))
+            {
+                decimal.TryParse(targetBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out target);
+            }
+
+            string defaultTitle = loc.GetString("Goals_Dialog_DefaultTitle");
+            string title = string.IsNullOrWhiteSpace(titleBox.Text) ? defaultTitle : titleBox.Text.Trim();
             string? linkedId = (accPicker.SelectedItem as Account)?.Id;
 
             if (target > 0)
@@ -78,17 +97,27 @@ public sealed partial class GoalsPage : Page
             var goal = ViewModel.Goals.FirstOrDefault(g => g.Id == goalId);
             if (goal == null) return;
 
-            var amountBox = new TextBox { Header = "Deposit Amount", PlaceholderText = "0.00" };
+            var loc = LocalizationService.Current;
+            var amountBox = new TextBox
+            {
+                Header = loc.GetString("Goals_Deposit_AmountHeader"),
+                PlaceholderText = loc.GetString("Common_AmountPlaceholder")
+            };
             var panel = new StackPanel { Spacing = 8, Width = 320 };
-            panel.Children.Add(new TextBlock { Text = $"Add funds toward '{goal.Title}'", FontSize = 13, Foreground = Application.Current.Resources["TextFillColorSecondaryBrush"] as Microsoft.UI.Xaml.Media.Brush });
+            panel.Children.Add(new TextBlock
+            {
+                Text = loc.Format("Goals_Deposit_Prompt", goal.Title),
+                FontSize = 13,
+                Foreground = Application.Current.Resources["TextFillColorSecondaryBrush"] as Microsoft.UI.Xaml.Media.Brush
+            });
             panel.Children.Add(amountBox);
 
             var dialog = new ContentDialog
             {
-                Title = "Contribute to Goal",
+                Title = loc.GetString("Goals_Deposit_DialogTitle"),
                 Content = panel,
-                PrimaryButtonText = "Deposit Funds",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = loc.GetString("Goals_Deposit_ExecuteButton"),
+                CloseButtonText = loc.GetString("Common_Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = XamlRoot
             };
@@ -96,9 +125,13 @@ public sealed partial class GoalsPage : Page
             var res = await dialog.ShowAsync();
             if (res == ContentDialogResult.Primary)
             {
-                if (decimal.TryParse(amountBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                if (decimal.TryParse(amountBox.Text, NumberStyles.Any, CultureInfo.CurrentCulture, out var amt) ||
+                    decimal.TryParse(amountBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out amt))
                 {
-                    await ViewModel.ContributeToGoalAsync(goalId, amt);
+                    if (amt > 0)
+                    {
+                        await ViewModel.ContributeToGoalAsync(goalId, amt);
+                    }
                 }
             }
         }
@@ -108,12 +141,13 @@ public sealed partial class GoalsPage : Page
     {
         if (sender is Button btn && btn.Tag is string goalId)
         {
+            var loc = LocalizationService.Current;
             var dialog = new ContentDialog
             {
-                Title = "Delete Goal?",
-                Content = "Are you sure you want to delete this savings goal?",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = loc.GetString("Goals_Delete_DialogTitle"),
+                Content = loc.GetString("Goals_Delete_DialogContent"),
+                PrimaryButtonText = loc.GetString("Common_Delete"),
+                CloseButtonText = loc.GetString("Common_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = XamlRoot
             };

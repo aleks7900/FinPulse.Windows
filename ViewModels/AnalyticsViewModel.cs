@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -215,7 +216,7 @@ public class AnalyticsViewModel : ViewModelBase
 
                 CategoryBreakdown.Add(new CategorySpendItem
                 {
-                    CategoryName = cat?.Name ?? "Uncategorized",
+                    CategoryName = cat?.Name ?? LocalizationService.Current.GetString("Category_Uncategorized"),
                     CategoryIcon = cat?.Icon ?? "category",
                     HexColor = cat != null ? $"#{((uint)cat.ColorHex):X8}" : "#607D8B",
                     Amount = new Money(item.TotalMinor, cur),
@@ -241,7 +242,7 @@ public class AnalyticsViewModel : ViewModelBase
                 if (inc > maxTrend) maxTrend = inc;
                 if (exp > maxTrend) maxTrend = exp;
 
-                trendTemp.Add((targetMonth.ToString("MMM yyyy"), inc, exp, inc - exp));
+                trendTemp.Add((targetMonth.ToString("MMM yyyy", CultureInfo.CurrentCulture), inc, exp, inc - exp));
             }
 
             foreach (var (label, inc, exp, net) in trendTemp)

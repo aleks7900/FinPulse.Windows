@@ -54,18 +54,20 @@ public class WindowsNotificationService : INotificationService
 
     public void NotifyBudgetAlert(string budgetName, int percentageConsumed)
     {
+        var loc = LocalizationService.Current;
         ShowNotification(
-            "Budget Alert",
-            $"{budgetName} budget has reached {percentageConsumed}% of its limit.",
+            loc.GetString("Notification_BudgetAlert_Title"),
+            loc.Format("Notification_BudgetAlert_Body", budgetName, percentageConsumed),
             tag: $"budget_{budgetName}"
         );
     }
 
     public void NotifyUpcomingBill(string title, string amountFormatted, string dueDate)
     {
+        var loc = LocalizationService.Current;
         ShowNotification(
-            "Upcoming Payment Due",
-            $"{title} ({amountFormatted}) is scheduled for {dueDate}.",
+            loc.GetString("Notification_BillDue_Title"),
+            loc.Format("Notification_BillDue_Body", title, amountFormatted, dueDate),
             tag: $"bill_{title}"
         );
     }

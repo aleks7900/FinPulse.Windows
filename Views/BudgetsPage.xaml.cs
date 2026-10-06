@@ -28,17 +28,25 @@ public sealed partial class BudgetsPage : Page
 
     private async void AddBudgetButton_Click(object sender, RoutedEventArgs e)
     {
-        var nameBox = new TextBox { Header = "Budget Name", PlaceholderText = "e.g. Groceries & Food, Entertainment" };
+        var nameBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Dialog_NameHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Dialog_NamePlaceholder") 
+        };
         var catBox = new ComboBox
         {
-            Header = "Expense Category",
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Dialog_CategoryHeader"),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = ViewModel.AvailableCategories,
             DisplayMemberPath = "Name"
         };
         catBox.SelectedIndex = 0;
 
-        var limitBox = new TextBox { Header = "Monthly Limit Amount", PlaceholderText = "0.00" };
+        var limitBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Dialog_LimitHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_AmountPlaceholder") 
+        };
 
         var panel = new StackPanel { Spacing = 12, Width = 360 };
         panel.Children.Add(nameBox);
@@ -47,10 +55,10 @@ public sealed partial class BudgetsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Create New Budget",
+            Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Dialog_CreateTitle"),
             Content = panel,
-            PrimaryButtonText = "Create Budget",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Dialog_CreateButton"),
+            CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -58,7 +66,10 @@ public sealed partial class BudgetsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary && catBox.SelectedItem is Category selectedCat)
         {
-            decimal.TryParse(limitBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var limit);
+            if (!decimal.TryParse(limitBox.Text, NumberStyles.Any, CultureInfo.CurrentCulture, out var limit))
+            {
+                decimal.TryParse(limitBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out limit);
+            }
             string name = string.IsNullOrWhiteSpace(nameBox.Text) ? selectedCat.Name : nameBox.Text.Trim();
             if (limit > 0)
             {
@@ -73,10 +84,10 @@ public sealed partial class BudgetsPage : Page
         {
             var dialog = new ContentDialog
             {
-                Title = "Delete Budget?",
-                Content = "Are you sure you want to delete this budget?",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Delete_DialogTitle"),
+                Content = FinPulse.Windows.Services.LocalizationService.Current.GetString("Budgets_Delete_DialogContent"),
+                PrimaryButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Delete"),
+                CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = XamlRoot
             };

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using FinPulse.Windows.Services;
 using FinPulse.Windows.ViewModels;
 
 namespace FinPulse.Windows.Views;
@@ -26,8 +27,16 @@ public sealed partial class SettingsPage : Page
 
     private async void SignInEmailButton_Click(object sender, RoutedEventArgs e)
     {
-        var emailBox = new TextBox { Header = "Email Address", PlaceholderText = "alex@example.com" };
-        var passwordBox = new PasswordBox { Header = "Password" };
+        var loc = LocalizationService.Current;
+        var emailBox = new TextBox
+        {
+            Header = loc.GetString("Settings_SignInDialog_EmailHeader"),
+            PlaceholderText = "alex@example.com"
+        };
+        var passwordBox = new PasswordBox
+        {
+            Header = loc.GetString("Settings_SignInDialog_PasswordHeader")
+        };
 
         var panel = new StackPanel { Spacing = 12, Width = 340 };
         panel.Children.Add(emailBox);
@@ -35,10 +44,10 @@ public sealed partial class SettingsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Sign in to FinPulse",
+            Title = loc.GetString("Settings_SignInDialog_Title"),
             Content = panel,
-            PrimaryButtonText = "Sign In",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = loc.GetString("Settings_SignInDialog_Button"),
+            CloseButtonText = loc.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -52,21 +61,22 @@ public sealed partial class SettingsPage : Page
 
     private async void SignInGoogleButton_Click(object sender, RoutedEventArgs e)
     {
+        var loc = LocalizationService.Current;
         var googleEmailBox = new TextBox
         {
-            Header = "Google Account Email",
+            Header = loc.GetString("Settings_GoogleDialog_EmailHeader"),
             PlaceholderText = "alex@gmail.com",
             Text = "alex@gmail.com"
         };
         var displayNameBox = new TextBox
         {
-            Header = "Display Name (Optional)",
+            Header = loc.GetString("Settings_GoogleDialog_NameHeader"),
             PlaceholderText = "Alex"
         };
 
         var browserAuthButton = new Button
         {
-            Content = "Sign in via System Web Browser (OAuth 2.0)",
+            Content = loc.GetString("Settings_GoogleDialog_BrowserButton"),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 0, 4)
         };
@@ -75,7 +85,7 @@ public sealed partial class SettingsPage : Page
 
         panel.Children.Add(new TextBlock
         {
-            Text = "Connect your Google account to synchronize your financial accounts, transactions, and budgets with FinPulse on Android.",
+            Text = loc.GetString("Settings_GoogleDialog_Prompt"),
             TextWrapping = TextWrapping.Wrap,
             FontSize = 13
         });
@@ -86,10 +96,10 @@ public sealed partial class SettingsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Sign In with Google",
+            Title = loc.GetString("Settings_GoogleDialog_Title"),
             Content = panel,
-            PrimaryButtonText = "Connect Google Account",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = loc.GetString("Settings_GoogleDialog_ConnectButton"),
+            CloseButtonText = loc.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };

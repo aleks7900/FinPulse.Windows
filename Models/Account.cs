@@ -83,14 +83,14 @@ public class Account
     [JsonIgnore]
     public string TypeDisplayName => Type switch
     {
-        AccountType.CASH => "Cash",
-        AccountType.BANK => "Bank Account",
-        AccountType.CREDIT_CARD => "Credit Card",
-        AccountType.SAVINGS => "Savings Account",
-        AccountType.INVESTMENT => "Investment Account",
-        AccountType.WALLET => "Digital Wallet",
-        AccountType.LOAN => "Loan",
-        _ => "Other"
+        AccountType.CASH => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Cash"),
+        AccountType.BANK => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Bank"),
+        AccountType.CREDIT_CARD => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_CreditCard"),
+        AccountType.SAVINGS => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Savings"),
+        AccountType.INVESTMENT => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Investment"),
+        AccountType.WALLET => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Wallet"),
+        AccountType.LOAN => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Loan"),
+        _ => FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Other")
     };
 
     [JsonIgnore]

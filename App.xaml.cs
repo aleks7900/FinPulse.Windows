@@ -23,6 +23,7 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         // Core Services
+        services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<IAuthService, FirebaseAuthService>();
         services.AddSingleton<IFirestoreClient, FirestoreRestClient>();
         services.AddSingleton<ILocalDataStore, LocalDataStore>();
@@ -65,6 +66,16 @@ public partial class App : Application
                 break;
             }
         }
+
+        // Apply saved language before window creation
+        try
+        {
+            var localStore = Services.GetRequiredService<ILocalDataStore>();
+            var settings = localStore.GetSettingsAsync().GetAwaiter().GetResult();
+            var loc = Services.GetRequiredService<ILocalizationService>();
+            loc.ApplyLanguage(settings.SelectedLanguage);
+        }
+        catch { }
 
         RootWindow = new MainWindow(initialTag);
         RootWindow.Activate();

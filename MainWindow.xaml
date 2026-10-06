@@ -29,6 +29,7 @@
         <!-- Custom WinUI TitleBar with FinPulse Branding -->
         <TitleBar
             x:Name="AppTitleBar"
+            x:Uid="AppTitleBar"
             Title="FinPulse Companion"
             Subtitle="Windows 11 Edition"
             BackRequested="TitleBar_BackRequested"
@@ -57,55 +58,55 @@
                         <Border Width="26" Height="26" CornerRadius="6" Background="{StaticResource FinPulsePrimaryBrush}">
                             <FontIcon Glyph="&#xE8C7;" Foreground="White" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <TextBlock Text="FinPulse" FontWeight="Bold" FontSize="16" FontFamily="Segoe UI Variable Display" VerticalAlignment="Center" />
+                        <TextBlock x:Uid="Nav_BrandTitle" Text="FinPulse" FontWeight="Bold" FontSize="16" FontFamily="Segoe UI Variable Display" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
             </NavigationView.PaneHeader>
 
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Overview" Tag="overview">
+                <NavigationViewItem x:Uid="Nav_Overview" Content="Overview" Tag="overview">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Accounts" Tag="accounts">
+                <NavigationViewItem x:Uid="Nav_Accounts" Content="Accounts" Tag="accounts">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8C7;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Transactions" Tag="transactions">
+                <NavigationViewItem x:Uid="Nav_Transactions" Content="Transactions" Tag="transactions">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8D4;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Analytics" Tag="analytics">
+                <NavigationViewItem x:Uid="Nav_Analytics" Content="Analytics" Tag="analytics">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE9D9;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Budgets" Tag="budgets">
+                <NavigationViewItem x:Uid="Nav_Budgets" Content="Budgets" Tag="budgets">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE825;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Goals" Tag="goals">
+                <NavigationViewItem x:Uid="Nav_Goals" Content="Goals" Tag="goals">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF580;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Recurring" Tag="recurring">
+                <NavigationViewItem x:Uid="Nav_Recurring" Content="Recurring" Tag="recurring">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE777;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem Content="Categories" Tag="categories">
+                <NavigationViewItem x:Uid="Nav_Categories" Content="Categories" Tag="categories">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8EC;" />
                     </NavigationViewItem.Icon>

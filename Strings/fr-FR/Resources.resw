@@ -1,0 +1,864 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App_Title" xml:space="preserve">
+    <value>FinPulse Compagnon</value>
+  </data>
+  <data name="AppTitleBar.Title" xml:space="preserve">
+    <value>FinPulse Compagnon</value>
+  </data>
+  <data name="AppTitleBar.Subtitle" xml:space="preserve">
+    <value>Édition Windows 11</value>
+  </data>
+  <data name="Nav_BrandTitle.Text" xml:space="preserve">
+    <value>FinPulse</value>
+  </data>
+  <data name="Nav_Overview.Content" xml:space="preserve">
+    <value>Vue d'ensemble</value>
+  </data>
+  <data name="Nav_Accounts.Content" xml:space="preserve">
+    <value>Comptes</value>
+  </data>
+  <data name="Nav_Transactions.Content" xml:space="preserve">
+    <value>Transactions</value>
+  </data>
+  <data name="Nav_Analytics.Content" xml:space="preserve">
+    <value>Analyses</value>
+  </data>
+  <data name="Nav_Budgets.Content" xml:space="preserve">
+    <value>Budgets</value>
+  </data>
+  <data name="Nav_Goals.Content" xml:space="preserve">
+    <value>Objectifs</value>
+  </data>
+  <data name="Nav_Recurring.Content" xml:space="preserve">
+    <value>Récurrent</value>
+  </data>
+  <data name="Nav_Categories.Content" xml:space="preserve">
+    <value>Catégories</value>
+  </data>
+  <data name="Nav_Settings.Content" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="Shell_Sync_OK" xml:space="preserve">
+    <value>Sync : OK</value>
+  </data>
+  <data name="Shell_Sync_Syncing" xml:space="preserve">
+    <value>Synchronisation...</value>
+  </data>
+  <data name="Shell_Sync_Error" xml:space="preserve">
+    <value>Erreur de synchronisation</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Of.Text" xml:space="preserve">
+    <value>sur</value>
+  </data>
+  <data name="Common_All.Content" xml:space="preserve">
+    <value>Tous</value>
+  </data>
+  <data name="Common_Expense.Content" xml:space="preserve">
+    <value>Dépense</value>
+  </data>
+  <data name="Common_Income.Content" xml:space="preserve">
+    <value>Revenu</value>
+  </data>
+  <data name="Common_Transfer.Content" xml:space="preserve">
+    <value>Virement</value>
+  </data>
+  <data name="Common_Refund.Content" xml:space="preserve">
+    <value>Remboursement</value>
+  </data>
+  <data name="Common_Manage.Content" xml:space="preserve">
+    <value>Gérer</value>
+  </data>
+  <data name="Common_ViewAll.Content" xml:space="preserve">
+    <value>Tout afficher</value>
+  </data>
+  <data name="Common_AmountPlaceholder" xml:space="preserve">
+    <value>0,00</value>
+  </data>
+  <data name="Common_CurrencyHeader" xml:space="preserve">
+    <value>Devise</value>
+  </data>
+  <data name="Overview_ViewAll.Content" xml:space="preserve">
+    <value>Tout afficher</value>
+  </data>
+  <data name="Overview_ManageAccounts.Content" xml:space="preserve">
+    <value>Gérer</value>
+  </data>
+  <data name="Budgets_RemainingSuffix.Text" xml:space="preserve">
+    <value> restants</value>
+  </data>
+  <data name="AccountType_Cash" xml:space="preserve">
+    <value>Espèces</value>
+  </data>
+  <data name="AccountType_Bank" xml:space="preserve">
+    <value>Compte bancaire</value>
+  </data>
+  <data name="AccountType_CreditCard" xml:space="preserve">
+    <value>Carte de crédit</value>
+  </data>
+  <data name="AccountType_Savings" xml:space="preserve">
+    <value>Compte d'épargne</value>
+  </data>
+  <data name="AccountType_Investment" xml:space="preserve">
+    <value>Compte d'investissement</value>
+  </data>
+  <data name="AccountType_Wallet" xml:space="preserve">
+    <value>Portefeuille numérique</value>
+  </data>
+  <data name="AccountType_Loan" xml:space="preserve">
+    <value>Prêt</value>
+  </data>
+  <data name="AccountType_Other" xml:space="preserve">
+    <value>Autre</value>
+  </data>
+  <data name="Frequency_Daily" xml:space="preserve">
+    <value>Quotidien</value>
+  </data>
+  <data name="Frequency_Weekly" xml:space="preserve">
+    <value>Hebdomadaire</value>
+  </data>
+  <data name="Frequency_BiWeekly" xml:space="preserve">
+    <value>Toutes les 2 semaines</value>
+  </data>
+  <data name="Frequency_Monthly" xml:space="preserve">
+    <value>Mensuel</value>
+  </data>
+  <data name="Frequency_Quarterly" xml:space="preserve">
+    <value>Trimestriel</value>
+  </data>
+  <data name="Frequency_Yearly" xml:space="preserve">
+    <value>Annuel</value>
+  </data>
+  <data name="Frequency_Custom" xml:space="preserve">
+    <value>Personnalisé</value>
+  </data>
+  <data name="Budget_Status_Exceeded" xml:space="preserve">
+    <value>Dépassé</value>
+  </data>
+  <data name="Budget_Status_NearLimit" xml:space="preserve">
+    <value>Près de la limite</value>
+  </data>
+  <data name="Budget_Status_OnTrack" xml:space="preserve">
+    <value>En bonne voie</value>
+  </data>
+  <data name="Overview_HeaderTitle.Text" xml:space="preserve">
+    <value>FinPulse Compagnon</value>
+  </data>
+  <data name="Overview_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Statut financier en temps réel synchronisé avec FinPulse Cloud</value>
+  </data>
+  <data name="Overview_AddTransactionButton.Text" xml:space="preserve">
+    <value>Ajouter une transaction</value>
+  </data>
+  <data name="Overview_RefreshButton_Tooltip" xml:space="preserve">
+    <value>Actualiser (Ctrl+R)</value>
+  </data>
+  <data name="Overview_TotalBalance_Label.Text" xml:space="preserve">
+    <value>SOLDE TOTAL</value>
+  </data>
+  <data name="Overview_TotalBalance_Desc.Text" xml:space="preserve">
+    <value>Agrégé sur l'ensemble des comptes actifs</value>
+  </data>
+  <data name="Overview_Income_Label.Text" xml:space="preserve">
+    <value>REVENUS</value>
+  </data>
+  <data name="Overview_ThisMonth_Label.Text" xml:space="preserve">
+    <value>Ce mois-ci</value>
+  </data>
+  <data name="Overview_Expenses_Label.Text" xml:space="preserve">
+    <value>DÉPENSES</value>
+  </data>
+  <data name="Overview_NetSavings_Label.Text" xml:space="preserve">
+    <value>ÉPARGNE NETTE</value>
+  </data>
+  <data name="Overview_Variance_Label.Text" xml:space="preserve">
+    <value>Écart</value>
+  </data>
+  <data name="Overview_CashFlow_Title.Text" xml:space="preserve">
+    <value>Comparaison des flux de trésorerie</value>
+  </data>
+  <data name="Overview_CashFlow_Income.Text" xml:space="preserve">
+    <value>Revenus</value>
+  </data>
+  <data name="Overview_CashFlow_Expense.Text" xml:space="preserve">
+    <value>Dépenses</value>
+  </data>
+  <data name="Overview_RecentTransactions_Title.Text" xml:space="preserve">
+    <value>Transactions récentes</value>
+  </data>
+  <data name="Overview_Accounts_Title.Text" xml:space="preserve">
+    <value>Comptes</value>
+  </data>
+  <data name="Overview_Budgets_Title.Text" xml:space="preserve">
+    <value>Statut du budget</value>
+  </data>
+  <data name="Overview_AllBudgets.Content" xml:space="preserve">
+    <value>Tous les budgets</value>
+  </data>
+  <data name="Overview_Upcoming_Title.Text" xml:space="preserve">
+    <value>Paiements à venir</value>
+  </data>
+  <data name="Overview_ViewRecurring.Content" xml:space="preserve">
+    <value>Récurrent</value>
+  </data>
+  <data name="Accounts_HeaderTitle.Text" xml:space="preserve">
+    <value>Portefeuille de comptes</value>
+  </data>
+  <data name="Accounts_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Gérez vos comptes bancaires, cartes et fonds disponibles</value>
+  </data>
+  <data name="Accounts_TransferButton.Text" xml:space="preserve">
+    <value>Transférer des fonds</value>
+  </data>
+  <data name="Accounts_AddAccountButton.Text" xml:space="preserve">
+    <value>Ajouter un compte</value>
+  </data>
+  <data name="Accounts_EmptyState.Text" xml:space="preserve">
+    <value>Sélectionnez un compte pour voir les détails</value>
+  </data>
+  <data name="Accounts_CurrentBalance_Label.Text" xml:space="preserve">
+    <value>SOLDE ACTUEL</value>
+  </data>
+  <data name="Accounts_TotalInflow_Label.Text" xml:space="preserve">
+    <value>ENTRÉES TOTALES</value>
+  </data>
+  <data name="Accounts_TotalOutflow_Label.Text" xml:space="preserve">
+    <value>SORTIES TOTALES</value>
+  </data>
+  <data name="Accounts_History_Title.Text" xml:space="preserve">
+    <value>Historique des transactions du compte</value>
+  </data>
+  <data name="Accounts_Dialog_CreateTitle" xml:space="preserve">
+    <value>Créer un nouveau compte</value>
+  </data>
+  <data name="Accounts_Dialog_NameHeader" xml:space="preserve">
+    <value>Nom du compte</value>
+  </data>
+  <data name="Accounts_Dialog_NamePlaceholder" xml:space="preserve">
+    <value>ex. Compte courant, Épargne</value>
+  </data>
+  <data name="Accounts_Dialog_TypeHeader" xml:space="preserve">
+    <value>Type de compte</value>
+  </data>
+  <data name="Accounts_Dialog_StartingBalanceHeader" xml:space="preserve">
+    <value>Solde initial</value>
+  </data>
+  <data name="Accounts_Dialog_InstitutionHeader" xml:space="preserve">
+    <value>Institution financière</value>
+  </data>
+  <data name="Accounts_Dialog_InstitutionPlaceholder" xml:space="preserve">
+    <value>ex. BNP Paribas, Revolut, Boursorama</value>
+  </data>
+  <data name="Accounts_Dialog_CreateButton" xml:space="preserve">
+    <value>Créer le compte</value>
+  </data>
+  <data name="Accounts_Dialog_DefaultName" xml:space="preserve">
+    <value>Nouveau compte</value>
+  </data>
+  <data name="Accounts_Transfer_UnavailableTitle" xml:space="preserve">
+    <value>Virement indisponible</value>
+  </data>
+  <data name="Accounts_Transfer_UnavailableContent" xml:space="preserve">
+    <value>Vous devez disposer d'au moins deux comptes pour effectuer un virement.</value>
+  </data>
+  <data name="Accounts_Transfer_FromAccount" xml:space="preserve">
+    <value>Du compte</value>
+  </data>
+  <data name="Accounts_Transfer_ToAccount" xml:space="preserve">
+    <value>Vers le compte</value>
+  </data>
+  <data name="Accounts_Transfer_AmountHeader" xml:space="preserve">
+    <value>Montant du virement</value>
+  </data>
+  <data name="Accounts_Transfer_NoteHeader" xml:space="preserve">
+    <value>Note de virement</value>
+  </data>
+  <data name="Accounts_Transfer_NotePlaceholder" xml:space="preserve">
+    <value>Note de référence facultative</value>
+  </data>
+  <data name="Accounts_Transfer_DialogTitle" xml:space="preserve">
+    <value>Virement entre comptes</value>
+  </data>
+  <data name="Accounts_Transfer_ExecuteButton" xml:space="preserve">
+    <value>Exécuter le virement</value>
+  </data>
+  <data name="Accounts_Delete_DialogTitle" xml:space="preserve">
+    <value>Supprimer le compte ?</value>
+  </data>
+  <data name="Accounts_Delete_DialogContent" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer '{0}' ? Cela supprimera l'historique de son solde.</value>
+  </data>
+  <data name="Budgets_HeaderTitle.Text" xml:space="preserve">
+    <value>Gestion du budget</value>
+  </data>
+  <data name="Budgets_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Suivez les plafonds de dépenses par catégorie et maîtrisez vos objectifs</value>
+  </data>
+  <data name="Budgets_NewBudgetButton.Text" xml:space="preserve">
+    <value>Nouveau budget</value>
+  </data>
+  <data name="Budgets_TotalLimit_Label.Text" xml:space="preserve">
+    <value>LIMITE BUDGÉTAIRE TOTALE</value>
+  </data>
+  <data name="Budgets_TotalSpent_Label.Text" xml:space="preserve">
+    <value>TOTAL DÉPENSÉ (MTD)</value>
+  </data>
+  <data name="Budgets_Remaining_Label.Text" xml:space="preserve">
+    <value>MARGE RESTANTE</value>
+  </data>
+  <data name="Budgets_ActiveBudgets_Title.Text" xml:space="preserve">
+    <value>Budgets actifs</value>
+  </data>
+  <data name="Budgets_Dialog_CreateTitle" xml:space="preserve">
+    <value>Créer un nouveau budget</value>
+  </data>
+  <data name="Budgets_Dialog_NameHeader" xml:space="preserve">
+    <value>Nom du budget</value>
+  </data>
+  <data name="Budgets_Dialog_NamePlaceholder" xml:space="preserve">
+    <value>ex. Alimentation &amp; Repas, Loisirs</value>
+  </data>
+  <data name="Budgets_Dialog_CategoryHeader" xml:space="preserve">
+    <value>Catégorie de dépenses</value>
+  </data>
+  <data name="Budgets_Dialog_LimitHeader" xml:space="preserve">
+    <value>Plafond mensuel</value>
+  </data>
+  <data name="Budgets_Dialog_CreateButton" xml:space="preserve">
+    <value>Créer le budget</value>
+  </data>
+  <data name="Budgets_Delete_DialogTitle" xml:space="preserve">
+    <value>Supprimer le budget ?</value>
+  </data>
+  <data name="Budgets_Delete_DialogContent" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer ce budget ?</value>
+  </data>
+  <data name="Categories_HeaderTitle.Text" xml:space="preserve">
+    <value>Catalogue des catégories</value>
+  </data>
+  <data name="Categories_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Groupes de classification des revenus et dépenses prédéfinis et personnalisés</value>
+  </data>
+  <data name="Categories_AddCategoryButton.Text" xml:space="preserve">
+    <value>Ajouter une catégorie</value>
+  </data>
+  <data name="Categories_ExpenseCategories_Title.Text" xml:space="preserve">
+    <value>Catégories de dépenses</value>
+  </data>
+  <data name="Categories_IncomeCategories_Title.Text" xml:space="preserve">
+    <value>Catégories de revenus</value>
+  </data>
+  <data name="Categories_DefaultBadge.Text" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="Categories_Dialog_AddTitle" xml:space="preserve">
+    <value>Ajouter une catégorie personnalisée</value>
+  </data>
+  <data name="Categories_Dialog_NameHeader" xml:space="preserve">
+    <value>Nom de la catégorie</value>
+  </data>
+  <data name="Categories_Dialog_NamePlaceholder" xml:space="preserve">
+    <value>ex. Logiciels, Loisirs, Freelance</value>
+  </data>
+  <data name="Categories_Dialog_TypeHeader" xml:space="preserve">
+    <value>Type de catégorie</value>
+  </data>
+  <data name="Categories_Dialog_SaveButton" xml:space="preserve">
+    <value>Enregistrer la catégorie</value>
+  </data>
+  <data name="Category_Uncategorized" xml:space="preserve">
+    <value>Sans catégorie</value>
+  </data>
+  <data name="Goals_HeaderTitle.Text" xml:space="preserve">
+    <value>Objectifs d'épargne financière</value>
+  </data>
+  <data name="Goals_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Fixez des étapes, calculez vos versements mensuels et déposez des fonds</value>
+  </data>
+  <data name="Goals_NewGoalButton.Text" xml:space="preserve">
+    <value>Nouvel objectif</value>
+  </data>
+  <data name="Goals_RemainingToTarget.Text" xml:space="preserve">
+    <value>restant pour atteindre l'objectif</value>
+  </data>
+  <data name="Goals_SuggestedContribution_Label.Text" xml:space="preserve">
+    <value>VERSEMENT SUGGÉRÉ</value>
+  </data>
+  <data name="Goals_PerMonth_Label.Text" xml:space="preserve">
+    <value>Par mois pour atteindre l'échéance</value>
+  </data>
+  <data name="Goals_DepositButton.Text" xml:space="preserve">
+    <value>Déposer</value>
+  </data>
+  <data name="Goals_Dialog_CreateTitle" xml:space="preserve">
+    <value>Créer un objectif financier</value>
+  </data>
+  <data name="Goals_Dialog_TitleHeader" xml:space="preserve">
+    <value>Titre de l'objectif</value>
+  </data>
+  <data name="Goals_Dialog_TitlePlaceholder" xml:space="preserve">
+    <value>ex. Nouvel ordinateur, Vacances, Fonds d'urgence</value>
+  </data>
+  <data name="Goals_Dialog_AmountHeader" xml:space="preserve">
+    <value>Montant cible</value>
+  </data>
+  <data name="Goals_Dialog_DeadlineHeader" xml:space="preserve">
+    <value>Date limite cible</value>
+  </data>
+  <data name="Goals_Dialog_LinkedAccountHeader" xml:space="preserve">
+    <value>Compte lié (facultatif)</value>
+  </data>
+  <data name="Goals_Dialog_CreateButton" xml:space="preserve">
+    <value>Créer l'objectif</value>
+  </data>
+  <data name="Goals_Dialog_DefaultTitle" xml:space="preserve">
+    <value>Objectif d'épargne</value>
+  </data>
+  <data name="Goals_Deposit_DialogTitle" xml:space="preserve">
+    <value>Contribuer à l'objectif</value>
+  </data>
+  <data name="Goals_Deposit_Prompt" xml:space="preserve">
+    <value>Ajouter des fonds pour '{0}'</value>
+  </data>
+  <data name="Goals_Deposit_AmountHeader" xml:space="preserve">
+    <value>Montant du dépôt</value>
+  </data>
+  <data name="Goals_Deposit_ExecuteButton" xml:space="preserve">
+    <value>Déposer les fonds</value>
+  </data>
+  <data name="Goals_Delete_DialogTitle" xml:space="preserve">
+    <value>Supprimer l'objectif ?</value>
+  </data>
+  <data name="Goals_Delete_DialogContent" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer cet objectif d'épargne ?</value>
+  </data>
+  <data name="QuickAdd_Title.Title" xml:space="preserve">
+    <value>Ajouter une transaction</value>
+  </data>
+  <data name="QuickAdd_SaveButton.Content" xml:space="preserve">
+    <value>Enregistrer la transaction</value>
+  </data>
+  <data name="QuickAdd_AmountHeader.Text" xml:space="preserve">
+    <value>Montant</value>
+  </data>
+  <data name="QuickAdd_AmountBox.PlaceholderText" xml:space="preserve">
+    <value>0,00</value>
+  </data>
+  <data name="QuickAdd_TypeHeader.Header" xml:space="preserve">
+    <value>Type de transaction</value>
+  </data>
+  <data name="QuickAdd_SourceAccountHeader.Header" xml:space="preserve">
+    <value>Compte source</value>
+  </data>
+  <data name="QuickAdd_DestinationAccountHeader.Header" xml:space="preserve">
+    <value>Compte de destination</value>
+  </data>
+  <data name="QuickAdd_CategoryHeader.Header" xml:space="preserve">
+    <value>Catégorie</value>
+  </data>
+  <data name="QuickAdd_MerchantHeader.Header" xml:space="preserve">
+    <value>Commerçant / Bénéficiaire</value>
+  </data>
+  <data name="QuickAdd_MerchantHeader.PlaceholderText" xml:space="preserve">
+    <value>ex. Spotify, Carrefour, Total</value>
+  </data>
+  <data name="QuickAdd_DescriptionHeader.Header" xml:space="preserve">
+    <value>Description / Notes</value>
+  </data>
+  <data name="QuickAdd_DescriptionHeader.PlaceholderText" xml:space="preserve">
+    <value>Détails facultatifs</value>
+  </data>
+  <data name="QuickAdd_DateHeader.Header" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="QuickAdd_Error_Title.Title" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="QuickAdd_Error_InvalidAmount" xml:space="preserve">
+    <value>Veuillez saisir un montant supérieur à 0.</value>
+  </data>
+  <data name="QuickAdd_Error_NoSourceAccount" xml:space="preserve">
+    <value>Veuillez sélectionner un compte source.</value>
+  </data>
+  <data name="QuickAdd_Error_NoDestinationAccount" xml:space="preserve">
+    <value>Veuillez sélectionner un compte de destination pour le virement.</value>
+  </data>
+  <data name="QuickAdd_Error_SameAccounts" xml:space="preserve">
+    <value>Les comptes source et de destination doivent être différents.</value>
+  </data>
+  <data name="QuickAdd_DefaultDescription" xml:space="preserve">
+    <value>Transaction rapide</value>
+  </data>
+  <data name="Recurring_HeaderTitle.Text" xml:space="preserve">
+    <value>Paiements récurrents &amp; Abonnements</value>
+  </data>
+  <data name="Recurring_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Gérez vos échéances, calculez les coûts mensuels et enregistrez les paiements</value>
+  </data>
+  <data name="Recurring_AddButton.Text" xml:space="preserve">
+    <value>Ajouter un paiement récurrent</value>
+  </data>
+  <data name="Recurring_MonthlyBurden_Label.Text" xml:space="preserve">
+    <value>CHARGE MENSUELLE DES ENGAGEMENTS</value>
+  </data>
+  <data name="Recurring_MonthlyBurden_Desc.Text" xml:space="preserve">
+    <value>Coût mensuel total prévisionnel des abonnements actifs</value>
+  </data>
+  <data name="Recurring_AnnualBurden_Label.Text" xml:space="preserve">
+    <value>CHARGE ANNUELLE DES ENGAGEMENTS</value>
+  </data>
+  <data name="Recurring_AnnualBurden_Desc.Text" xml:space="preserve">
+    <value>Dépenses d'abonnements prévisionnelles sur 12 mois</value>
+  </data>
+  <data name="Recurring_UpcomingSchedule_Title.Text" xml:space="preserve">
+    <value>Calendrier à venir</value>
+  </data>
+  <data name="Recurring_NextDueDate_Label.Text" xml:space="preserve">
+    <value>Prochaine échéance</value>
+  </data>
+  <data name="Recurring_MarkPaidButton.Text" xml:space="preserve">
+    <value>Marquer comme payé</value>
+  </data>
+  <data name="Recurring_Dialog_AddTitle" xml:space="preserve">
+    <value>Ajouter une obligation récurrente</value>
+  </data>
+  <data name="Recurring_Dialog_TitleHeader" xml:space="preserve">
+    <value>Titre de l'abonnement / de la facture</value>
+  </data>
+  <data name="Recurring_Dialog_TitlePlaceholder" xml:space="preserve">
+    <value>ex. Internet, Spotify, Salle de sport</value>
+  </data>
+  <data name="Recurring_Dialog_AmountHeader" xml:space="preserve">
+    <value>Montant facturé</value>
+  </data>
+  <data name="Recurring_Dialog_FrequencyHeader" xml:space="preserve">
+    <value>Périodicité</value>
+  </data>
+  <data name="Recurring_Dialog_AccountHeader" xml:space="preserve">
+    <value>Compte de paiement</value>
+  </data>
+  <data name="Recurring_Dialog_CategoryHeader" xml:space="preserve">
+    <value>Catégorie</value>
+  </data>
+  <data name="Recurring_Dialog_DueDateHeader" xml:space="preserve">
+    <value>Première / prochaine échéance</value>
+  </data>
+  <data name="Recurring_Dialog_SaveButton" xml:space="preserve">
+    <value>Enregistrer la règle</value>
+  </data>
+  <data name="Recurring_Dialog_DefaultTitle" xml:space="preserve">
+    <value>Obligation récurrente</value>
+  </data>
+  <data name="Recurring_Delete_DialogTitle" xml:space="preserve">
+    <value>Supprimer le paiement récurrent ?</value>
+  </data>
+  <data name="Recurring_Delete_DialogContent" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer cet échéancier récurrent ?</value>
+  </data>
+  <data name="Recurring_TxDescription" xml:space="preserve">
+    <value>Récurrent : {0}</value>
+  </data>
+  <data name="Transactions_HeaderTitle.Text" xml:space="preserve">
+    <value>Grand livre des transactions</value>
+  </data>
+  <data name="Transactions_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Vue détaillée sous forme de tableau avec filtres multicritères et recherche</value>
+  </data>
+  <data name="Transactions_AddButton.Text" xml:space="preserve">
+    <value>Ajouter une transaction</value>
+  </data>
+  <data name="Transactions_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Rechercher commerçant, notes...</value>
+  </data>
+  <data name="Transactions_Filter_AllAccounts.PlaceholderText" xml:space="preserve">
+    <value>Tous les comptes</value>
+  </data>
+  <data name="Transactions_Filter_AllCategories.PlaceholderText" xml:space="preserve">
+    <value>Toutes les catégories</value>
+  </data>
+  <data name="Transactions_Date_AllTime.Content" xml:space="preserve">
+    <value>Depuis le début</value>
+  </data>
+  <data name="Transactions_Date_ThisMonth.Content" xml:space="preserve">
+    <value>Ce mois-ci</value>
+  </data>
+  <data name="Transactions_Date_LastMonth.Content" xml:space="preserve">
+    <value>Le mois dernier</value>
+  </data>
+  <data name="Transactions_Date_ThisYear.Content" xml:space="preserve">
+    <value>Cette année</value>
+  </data>
+  <data name="Transactions_ResetFilters_Tooltip" xml:space="preserve">
+    <value>Réinitialiser les filtres</value>
+  </data>
+  <data name="Transactions_Col_Date.Text" xml:space="preserve">
+    <value>DATE</value>
+  </data>
+  <data name="Transactions_Col_Description.Text" xml:space="preserve">
+    <value>DESCRIPTION / COMMERÇANT</value>
+  </data>
+  <data name="Transactions_Col_Category.Text" xml:space="preserve">
+    <value>CATÉGORIE</value>
+  </data>
+  <data name="Transactions_Col_Account.Text" xml:space="preserve">
+    <value>COMPTE</value>
+  </data>
+  <data name="Transactions_Col_Type.Text" xml:space="preserve">
+    <value>TYPE</value>
+  </data>
+  <data name="Transactions_Col_Amount.Text" xml:space="preserve">
+    <value>MONTANT</value>
+  </data>
+  <data name="Transactions_Footer_MatchingRecords.Text" xml:space="preserve">
+    <value>Enregistrements correspondants :</value>
+  </data>
+  <data name="Transactions_Footer_NetTotal.Text" xml:space="preserve">
+    <value>Total net :</value>
+  </data>
+  <data name="Transactions_Delete_DialogTitle" xml:space="preserve">
+    <value>Supprimer la transaction ?</value>
+  </data>
+  <data name="Transactions_Delete_DialogContent" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer cette transaction ? Les soldes des comptes seront mis à jour automatiquement.</value>
+  </data>
+  <data name="Analytics_HeaderTitle.Text" xml:space="preserve">
+    <value>Analyses financières</value>
+  </data>
+  <data name="Analytics_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Habitudes de dépenses, répartition par catégorie et indicateurs périodiques</value>
+  </data>
+  <data name="Analytics_Period_7Days.Content" xml:space="preserve">
+    <value>7 jours</value>
+  </data>
+  <data name="Analytics_Period_30Days.Content" xml:space="preserve">
+    <value>30 jours</value>
+  </data>
+  <data name="Analytics_Period_3Months.Content" xml:space="preserve">
+    <value>3 mois</value>
+  </data>
+  <data name="Analytics_Period_6Months.Content" xml:space="preserve">
+    <value>6 mois</value>
+  </data>
+  <data name="Analytics_Period_1Year.Content" xml:space="preserve">
+    <value>1 an</value>
+  </data>
+  <data name="Analytics_PeriodIncome_Label.Text" xml:space="preserve">
+    <value>REVENUS DE LA PÉRIODE</value>
+  </data>
+  <data name="Analytics_PeriodExpenses_Label.Text" xml:space="preserve">
+    <value>DÉPENSES DE LA PÉRIODE</value>
+  </data>
+  <data name="Analytics_SavingsRate_Label.Text" xml:space="preserve">
+    <value>TAUX D'ÉPARGNE</value>
+  </data>
+  <data name="Analytics_DailyBurn_Label.Text" xml:space="preserve">
+    <value>DÉPENSE QUOTIDIENNE MOYENNE</value>
+  </data>
+  <data name="Analytics_SpendingByCategory_Title.Text" xml:space="preserve">
+    <value>Dépenses par catégorie</value>
+  </data>
+  <data name="Analytics_MonthlyTrend_Title.Text" xml:space="preserve">
+    <value>Tendance mensuelle des revenus et dépenses</value>
+  </data>
+  <data name="Analytics_NetVariance_Label.Text" xml:space="preserve">
+    <value>Écart net</value>
+  </data>
+  <data name="Settings_HeaderTitle.Text" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="Settings_HeaderSubtitle.Text" xml:space="preserve">
+    <value>Préférences, devises par défaut et synchronisation cloud</value>
+  </data>
+  <data name="Settings_GoogleSection_Title.Text" xml:space="preserve">
+    <value>Compte Google &amp; Identité Cloud</value>
+  </data>
+  <data name="Settings_GoogleSection_Subtitle.Text" xml:space="preserve">
+    <value>Associez votre compte Google pour synchroniser vos données entre Android et Windows via Cloud Firestore</value>
+  </data>
+  <data name="Settings_GoogleAccountBadge.Text" xml:space="preserve">
+    <value>Compte Google</value>
+  </data>
+  <data name="Settings_SignOutButton.Text" xml:space="preserve">
+    <value>Se déconnecter</value>
+  </data>
+  <data name="Settings_NotSignedIn.Text" xml:space="preserve">
+    <value>Non connecté</value>
+  </data>
+  <data name="Settings_SignInPrompt.Text" xml:space="preserve">
+    <value>Connectez-vous avec votre compte Google pour activer la synchronisation cloud en temps réel avec Android.</value>
+  </data>
+  <data name="Settings_SignInGoogleButton.Text" xml:space="preserve">
+    <value>Se connecter avec Google</value>
+  </data>
+  <data name="Settings_SignInEmailButton.Text" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="Settings_Appearance_Title.Text" xml:space="preserve">
+    <value>Apparence &amp; Affichage</value>
+  </data>
+  <data name="Settings_Theme_Label.Text" xml:space="preserve">
+    <value>Thème de l'application</value>
+  </data>
+  <data name="Settings_Theme_Desc.Text" xml:space="preserve">
+    <value>Sélectionnez votre thème de couleurs Fluent préféré</value>
+  </data>
+  <data name="Theme_System.Content" xml:space="preserve">
+    <value>Système</value>
+  </data>
+  <data name="Theme_Light.Content" xml:space="preserve">
+    <value>Clair</value>
+  </data>
+  <data name="Theme_Dark.Content" xml:space="preserve">
+    <value>Sombre</value>
+  </data>
+  <data name="Settings_Privacy_Label.Text" xml:space="preserve">
+    <value>Mode confidentialité</value>
+  </data>
+  <data name="Settings_Privacy_Desc.Text" xml:space="preserve">
+    <value>Masquer les soldes monétaires sensibles sur le tableau de bord</value>
+  </data>
+  <data name="Settings_Language_Title.Text" xml:space="preserve">
+    <value>Langue &amp; Région</value>
+  </data>
+  <data name="Settings_Language_Label.Text" xml:space="preserve">
+    <value>Langue de l'application</value>
+  </data>
+  <data name="Settings_Language_Desc.Text" xml:space="preserve">
+    <value>Choisissez la langue d'affichage de votre choix</value>
+  </data>
+  <data name="Language_SystemDefault" xml:space="preserve">
+    <value>Valeur par défaut du système</value>
+  </data>
+  <data name="Settings_Currency_Title.Text" xml:space="preserve">
+    <value>Devise &amp; Formatage régional</value>
+  </data>
+  <data name="Settings_BaseCurrency_Label.Text" xml:space="preserve">
+    <value>Devise de base globale</value>
+  </data>
+  <data name="Settings_BaseCurrency_Desc.Text" xml:space="preserve">
+    <value>Devise par défaut pour les soldes agrégés et les nouveaux comptes</value>
+  </data>
+  <data name="Settings_Sync_Title.Text" xml:space="preserve">
+    <value>Synchronisation cloud Firebase</value>
+  </data>
+  <data name="Settings_SyncNowButton.Text" xml:space="preserve">
+    <value>Synchroniser maintenant</value>
+  </data>
+  <data name="Settings_SyncStatus_Label.Text" xml:space="preserve">
+    <value>STATUT</value>
+  </data>
+  <data name="Settings_LastSynced_Label.Text" xml:space="preserve">
+    <value>DERNIÈRE SYNCHRO</value>
+  </data>
+  <data name="Settings_PendingChanges_Label.Text" xml:space="preserve">
+    <value>MODIFICATIONS EN ATTENTE</value>
+  </data>
+  <data name="Settings_Sync_Description.Text" xml:space="preserve">
+    <value>FinPulse Compagnon se synchronise avec le projet Google Cloud Firestore « finpulse-cloud » via la résolution de conflits bidirectionnelle « dernier rédacteur gagne ».</value>
+  </data>
+  <data name="Settings_About_AppName.Text" xml:space="preserve">
+    <value>FinPulse Compagnon</value>
+  </data>
+  <data name="Settings_About_Version.Text" xml:space="preserve">
+    <value>Version 1.0.0 • Édition Windows 11 Fluent</value>
+  </data>
+  <data name="Settings_About_Description.Text" xml:space="preserve">
+    <value>Compagnon natif de l'application Android FinPulse. Conçu avec C#, WinUI 3, Windows App SDK, matériau Mica et comptabilité financière institutionnelle en partie double.</value>
+  </data>
+  <data name="Settings_SignInDialog_Title" xml:space="preserve">
+    <value>Se connecter à FinPulse</value>
+  </data>
+  <data name="Settings_SignInDialog_EmailHeader" xml:space="preserve">
+    <value>Adresse e-mail</value>
+  </data>
+  <data name="Settings_SignInDialog_PasswordHeader" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Settings_SignInDialog_Button" xml:space="preserve">
+    <value>Se connecter</value>
+  </data>
+  <data name="Settings_GoogleDialog_Title" xml:space="preserve">
+    <value>Se connecter avec Google</value>
+  </data>
+  <data name="Settings_GoogleDialog_Prompt" xml:space="preserve">
+    <value>Associez votre compte Google pour synchroniser vos comptes financiers, transactions et budgets avec FinPulse sur Android.</value>
+  </data>
+  <data name="Settings_GoogleDialog_BrowserButton" xml:space="preserve">
+    <value>Se connecter via le navigateur web du système (OAuth 2.0)</value>
+  </data>
+  <data name="Settings_GoogleDialog_EmailHeader" xml:space="preserve">
+    <value>Adresse e-mail du compte Google</value>
+  </data>
+  <data name="Settings_GoogleDialog_NameHeader" xml:space="preserve">
+    <value>Nom d'affichage (facultatif)</value>
+  </data>
+  <data name="Settings_GoogleDialog_ConnectButton" xml:space="preserve">
+    <value>Associer le compte Google</value>
+  </data>
+  <data name="Sync_Status_Syncing" xml:space="preserve">
+    <value>Synchronisation en cours...</value>
+  </data>
+  <data name="Sync_Status_Synchronized" xml:space="preserve">
+    <value>Synchronisé avec Firestore</value>
+  </data>
+  <data name="Sync_Status_Error" xml:space="preserve">
+    <value>Erreur de synchro : {0}</value>
+  </data>
+  <data name="Sync_Status_Idle" xml:space="preserve">
+    <value>En attente</value>
+  </data>
+  <data name="Sync_LastSync_Never" xml:space="preserve">
+    <value>Jamais</value>
+  </data>
+  <data name="Busy_Syncing" xml:space="preserve">
+    <value>Synchronisation avec le cloud FinPulse...</value>
+  </data>
+  <data name="Busy_SigningInGoogle" xml:space="preserve">
+    <value>Connexion avec le compte Google...</value>
+  </data>
+  <data name="Busy_ConnectingGoogle" xml:space="preserve">
+    <value>Association du compte Google...</value>
+  </data>
+  <data name="Busy_AuthenticatingToken" xml:space="preserve">
+    <value>Authentification du jeton d'ID Google...</value>
+  </data>
+  <data name="Busy_SigningInEmail" xml:space="preserve">
+    <value>Connexion avec le compte FinPulse...</value>
+  </data>
+  <data name="Notification_BudgetAlert_Title" xml:space="preserve">
+    <value>Alerte de budget</value>
+  </data>
+  <data name="Notification_BudgetAlert_Body" xml:space="preserve">
+    <value>Le budget {0} a atteint {1}% de son plafond.</value>
+  </data>
+  <data name="Notification_BillDue_Title" xml:space="preserve">
+    <value>Paiement à venir</value>
+  </data>
+  <data name="Notification_BillDue_Body" xml:space="preserve">
+    <value>{0} ({1}) est prévu pour le {2}.</value>
+  </data>
+</root>

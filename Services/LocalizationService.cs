@@ -1,0 +1,276 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Xml.Linq;
+using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.Globalization;
+
+namespace FinPulse.Windows.Services;
+
+public class LocalizationService : ILocalizationService
+{
+    private static LocalizationService? _currentInstance;
+    public static LocalizationService Current => _currentInstance ??= new LocalizationService();
+
+    private ResourceLoader? _resourceLoader;
+    private string _currentLanguage = "SYSTEM";
+    private readonly ConcurrentDictionary<string, Dictionary<string, string>> _reswCache = new(StringComparer.OrdinalIgnoreCase);
+
+    public string CurrentLanguage => _currentLanguage;
+
+    public event EventHandler? LanguageChanged;
+
+    private static readonly string[] KnownLanguageCodes =
+    [
+        "en-US", "de-DE", "fr-FR", "es-ES", "it-IT", "pt-PT",
+        "pl-PL", "ro-RO", "uk-UA", "zh-CN", "ja-JP", "ko-KR"
+    ];
+
+    public IReadOnlyList<LanguageOption> SupportedLanguages
+    {
+        get
+        {
+            string systemDefaultName = "System default";
+            try
+            {
+                string activeLang = GetEffectiveLanguageCode();
+                string? res = ResolveFromResw(activeLang, "Language_SystemDefault");
+                if (!string.IsNullOrEmpty(res))
+                    systemDefaultName = res;
+            }
+            catch { }
+
+            return new List<LanguageOption>
+            {
+                new("SYSTEM", systemDefaultName, "System default"),
+                new("en-US", "English", "English"),
+                new("de-DE", "Deutsch", "German"),
+                new("fr-FR", "Français", "French"),
+                new("es-ES", "Español", "Spanish"),
+                new("it-IT", "Italiano", "Italian"),
+                new("pt-PT", "Português", "Portuguese"),
+                new("pl-PL", "Polski", "Polish"),
+                new("ro-RO", "Română", "Romanian"),
+                new("uk-UA", "Українська", "Ukrainian"),
+                new("zh-CN", "简体中文", "Chinese (Simplified)"),
+                new("ja-JP", "日本語", "Japanese"),
+                new("ko-KR", "한국어", "Korean")
+            };
+        }
+    }
+
+    public LocalizationService()
+    {
+        _currentInstance = this;
+        InitializeLoader();
+    }
+
+    private void InitializeLoader()
+    {
+        try
+        {
+            _resourceLoader = new ResourceLoader();
+        }
+        catch
+        {
+            _resourceLoader = null;
+        }
+    }
+
+    public void ApplyLanguage(string languageCode)
+    {
+        if (string.IsNullOrWhiteSpace(languageCode) || languageCode.Equals("SYSTEM", StringComparison.OrdinalIgnoreCase))
+        {
+            _currentLanguage = "SYSTEM";
+            try
+            {
+                ApplicationLanguages.PrimaryLanguageOverride = string.Empty;
+            }
+            catch { }
+
+            CultureInfo.DefaultThreadCurrentCulture = null;
+            CultureInfo.DefaultThreadCurrentUICulture = null;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InstalledUICulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
+        }
+        else
+        {
+            _currentLanguage = languageCode;
+            try
+            {
+                ApplicationLanguages.PrimaryLanguageOverride = languageCode;
+            }
+            catch { }
+
+            try
+            {
+                var culture = new CultureInfo(languageCode);
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentUICulture = culture;
+                Thread.CurrentThread.CurrentCulture = culture;
+                Thread.CurrentThread.CurrentUICulture = culture;
+            }
+            catch { }
+        }
+
+        InitializeLoader();
+        LanguageChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public string GetString(string resourceKey, string? fallback = null)
+    {
+        if (string.IsNullOrEmpty(resourceKey))
+            return string.Empty;
+
+        // 1. Try MRT Core ResourceLoader
+        if (_resourceLoader != null)
+        {
+            try
+            {
+                string val = _resourceLoader.GetString(resourceKey);
+                if (!string.IsNullOrEmpty(val))
+                    return val;
+
+                // Try suffix lookups (.Text, .Content, .Header, .Title, .Message)
+                foreach (var suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message", ".PlaceholderText" })
+                {
+                    val = _resourceLoader.GetString(resourceKey + suffix);
+                    if (!string.IsNullOrEmpty(val))
+                        return val;
+                }
+            }
+            catch { }
+        }
+
+        // 2. Fallback to loaded XML .resw files directly (crucial for unit test runner & unpackaged reliability)
+        string activeLang = GetEffectiveLanguageCode();
+        string? reswVal = ResolveFromResw(activeLang, resourceKey);
+        if (!string.IsNullOrEmpty(reswVal))
+            return reswVal;
+
+        // 3. Fallback to base language (en-US)
+        if (!activeLang.Equals("en-US", StringComparison.OrdinalIgnoreCase))
+        {
+            reswVal = ResolveFromResw("en-US", resourceKey);
+            if (!string.IsNullOrEmpty(reswVal))
+                return reswVal;
+        }
+
+        return fallback ?? resourceKey;
+    }
+
+    public string Format(string resourceKey, params object[] args)
+    {
+        string pattern = GetString(resourceKey);
+        try
+        {
+            return string.Format(CultureInfo.CurrentCulture, pattern, args);
+        }
+        catch
+        {
+            return pattern;
+        }
+    }
+
+    private string GetEffectiveLanguageCode()
+    {
+        if (_currentLanguage != "SYSTEM" && !string.IsNullOrWhiteSpace(_currentLanguage))
+            return _currentLanguage;
+
+        string sysLang = CultureInfo.CurrentUICulture.Name;
+        // Match exact or prefix (e.g. de -> de-DE, uk -> uk-UA)
+        string? match = KnownLanguageCodes.FirstOrDefault(code => code.Equals(sysLang, StringComparison.OrdinalIgnoreCase))
+                     ?? KnownLanguageCodes.FirstOrDefault(code => sysLang.StartsWith(code[..2], StringComparison.OrdinalIgnoreCase));
+
+        return match ?? "en-US";
+    }
+
+    private string? ResolveFromResw(string languageCode, string key)
+    {
+        var dict = GetOrLoadReswDictionary(languageCode);
+        if (dict == null)
+            return null;
+
+        if (dict.TryGetValue(key, out var val))
+            return val;
+
+        // Try suffixes
+        foreach (var suffix in new[] { ".Text", ".Content", ".Header", ".Title", ".Message", ".PlaceholderText" })
+        {
+            if (dict.TryGetValue(key + suffix, out val))
+                return val;
+        }
+
+        return null;
+    }
+
+    private static string? _customStringsDirectory;
+    public static void SetStringsDirectory(string dir) => _customStringsDirectory = dir;
+
+    public Dictionary<string, string> GetOrLoadReswDictionary(string languageCode)
+    {
+        return _reswCache.GetOrAdd(languageCode, lang =>
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            string? reswPath = null;
+            if (!string.IsNullOrEmpty(_customStringsDirectory))
+            {
+                string customPath = Path.Combine(_customStringsDirectory, lang, "Resources.resw");
+                if (File.Exists(customPath)) reswPath = customPath;
+            }
+
+            if (reswPath == null)
+            {
+                string[] probeDirs =
+                {
+                    AppContext.BaseDirectory,
+                    Path.Combine(AppContext.BaseDirectory, "..", "..", ".."),
+                    Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "FinPulse.Windows"),
+                    Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "FinPulse.Windows"),
+                    Directory.GetCurrentDirectory(),
+                    Path.Combine(Directory.GetCurrentDirectory(), "FinPulse.Windows")
+                };
+
+                foreach (var dir in probeDirs)
+                {
+                    string path = Path.GetFullPath(Path.Combine(dir, "Strings", lang, "Resources.resw"));
+                    if (File.Exists(path))
+                    {
+                        reswPath = path;
+                        break;
+                    }
+                }
+            }
+
+            if (reswPath == null || !File.Exists(reswPath))
+                return dict;
+
+            try
+            {
+                var doc = XDocument.Load(reswPath);
+                foreach (var data in doc.Descendants("data"))
+                {
+                    var nameAttr = data.Attribute("name")?.Value;
+                    var valElem = data.Element("value")?.Value;
+                    if (!string.IsNullOrEmpty(nameAttr) && valElem != null)
+                    {
+                        dict[nameAttr] = valElem;
+                    }
+                }
+            }
+            catch { }
+
+            return dict;
+        });
+    }
+
+    public void ClearCache()
+    {
+        _reswCache.Clear();
+    }
+}

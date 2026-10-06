@@ -14,18 +14,18 @@
             <!-- Header Row with Period Selector -->
             <Grid>
                 <StackPanel Spacing="4">
-                    <TextBlock Text="Financial Analytics" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                    <TextBlock Text="Spending patterns, category distributions, and multi-period metrics" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Analytics_HeaderTitle" Text="Financial Analytics" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Analytics_HeaderSubtitle" Text="Spending patterns, category distributions, and multi-period metrics" Style="{StaticResource PageSubtitleTextBlockStyle}" />
                 </StackPanel>
 
                 <ComboBox HorizontalAlignment="Right" VerticalAlignment="Center" Width="150"
                           SelectedValue="{x:Bind ViewModel.SelectedPeriod, Mode=TwoWay}"
-                          SelectedValuePath="Content">
-                    <ComboBoxItem Content="7 Days" />
-                    <ComboBoxItem Content="30 Days" IsSelected="True" />
-                    <ComboBoxItem Content="3 Months" />
-                    <ComboBoxItem Content="6 Months" />
-                    <ComboBoxItem Content="1 Year" />
+                          SelectedValuePath="Tag">
+                    <ComboBoxItem x:Uid="Analytics_Period_7Days" Tag="7 Days" Content="7 Days" />
+                    <ComboBoxItem x:Uid="Analytics_Period_30Days" Tag="30 Days" Content="30 Days" IsSelected="True" />
+                    <ComboBoxItem x:Uid="Analytics_Period_3Months" Tag="3 Months" Content="3 Months" />
+                    <ComboBoxItem x:Uid="Analytics_Period_6Months" Tag="6 Months" Content="6 Months" />
+                    <ComboBoxItem x:Uid="Analytics_Period_1Year" Tag="1 Year" Content="1 Year" />
                 </ComboBox>
             </Grid>
 
@@ -40,28 +40,28 @@
 
                 <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="PERIOD INCOME" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Analytics_PeriodIncome_Label" Text="PERIOD INCOME" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.PeriodIncomeString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulsePrimaryBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="PERIOD EXPENSES" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Analytics_PeriodExpenses_Label" Text="PERIOD EXPENSES" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.PeriodExpenseString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseNegativeBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="2" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="SAVINGS RATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Analytics_SavingsRate_Label" Text="SAVINGS RATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.SavingsRate, Mode=OneWay, Converter={StaticResource RatioToPercentStringConverter}}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseAccentBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="3" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="DAILY BURN RATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Analytics_DailyBurn_Label" Text="DAILY BURN RATE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.AverageDailyBurnString, Mode=OneWay}" FontSize="24" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
@@ -77,7 +77,7 @@
                 <!-- Left Column: Spending By Category Breakdown -->
                 <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Spending by Category" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                        <TextBlock x:Uid="Analytics_SpendingByCategory_Title" Text="Spending by Category" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                         <ItemsControl ItemsSource="{x:Bind ViewModel.CategoryBreakdown, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>
@@ -106,7 +106,7 @@
                 <!-- Right Column: Monthly Historical Trend -->
                 <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Monthly Spending &amp; Income Trend" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                        <TextBlock x:Uid="Analytics_MonthlyTrend_Title" Text="Monthly Spending &amp; Income Trend" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                         <ItemsControl ItemsSource="{x:Bind ViewModel.MonthlyTrends, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>
@@ -128,7 +128,7 @@
 
                                             <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="1">
                                                 <TextBlock Text="{x:Bind FormattedNet}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Right" />
-                                                <TextBlock Text="Net Variance" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
+                                                <TextBlock x:Uid="Analytics_NetVariance_Label" Text="Net Variance" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>

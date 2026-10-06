@@ -87,7 +87,7 @@ public class RecurringTransaction
     public DateTime NextDueDateTime => DateTimeOffset.FromUnixTimeMilliseconds(NextDueDate).LocalDateTime;
 
     [JsonIgnore]
-    public string FormattedNextDue => NextDueDateTime.ToString("MMM dd, yyyy");
+    public string FormattedNextDue => NextDueDateTime.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
 
     [JsonIgnore]
     public string CategoryName { get; set; } = string.Empty;
@@ -98,13 +98,13 @@ public class RecurringTransaction
     [JsonIgnore]
     public string FrequencyDisplayName => Frequency switch
     {
-        PaymentFrequency.DAILY => "Daily",
-        PaymentFrequency.WEEKLY => "Weekly",
-        PaymentFrequency.BI_WEEKLY => "Every 2 Weeks",
-        PaymentFrequency.MONTHLY => "Monthly",
-        PaymentFrequency.QUARTERLY => "Quarterly",
-        PaymentFrequency.YEARLY => "Yearly",
-        _ => "Custom"
+        PaymentFrequency.DAILY => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_Daily"),
+        PaymentFrequency.WEEKLY => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_Weekly"),
+        PaymentFrequency.BI_WEEKLY => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_BiWeekly"),
+        PaymentFrequency.MONTHLY => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_Monthly"),
+        PaymentFrequency.QUARTERLY => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_Quarterly"),
+        PaymentFrequency.YEARLY => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_Yearly"),
+        _ => FinPulse.Windows.Services.LocalizationService.Current.GetString("Frequency_Custom")
     };
 
     public Money CalculateMonthlyCost()

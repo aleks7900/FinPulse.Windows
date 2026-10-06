@@ -80,10 +80,20 @@ public class Transaction
     public DateTime DateTime => DateTimeOffset.FromUnixTimeMilliseconds(Timestamp).LocalDateTime;
 
     [JsonIgnore]
-    public string FormattedDate => DateTime.ToString("MMM dd, yyyy");
+    public string FormattedDate => DateTime.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
 
     [JsonIgnore]
-    public string FormattedTime => DateTime.ToString("HH:mm");
+    public string FormattedTime => DateTime.ToString("t", System.Globalization.CultureInfo.CurrentCulture);
+
+    [JsonIgnore]
+    public string TypeDisplayName => Type switch
+    {
+        TransactionType.INCOME => FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Income.Content"),
+        TransactionType.EXPENSE => FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Expense.Content"),
+        TransactionType.TRANSFER => FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Transfer.Content"),
+        TransactionType.REFUND => FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Refund.Content"),
+        _ => Type.ToString()
+    };
 
     [JsonIgnore]
     public string DisplayTitle => !string.IsNullOrWhiteSpace(Merchant)

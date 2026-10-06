@@ -22,6 +22,9 @@ public sealed partial class MainWindow : Window
 
         _viewModel = App.Services.GetRequiredService<ShellViewModel>();
 
+        var loc = App.Services.GetService<ILocalizationService>() ?? LocalizationService.Current;
+        Title = loc.GetString("App_Title", "FinPulse Companion");
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;

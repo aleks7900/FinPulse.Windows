@@ -61,12 +61,14 @@ public class OverviewViewModel : ViewModelBase
         set => SetProperty(ref _netSavings, value);
     }
 
-    private string _currentMonthYear = DateTime.Now.ToString("MMMM yyyy");
+    private string _currentMonthYear = DateTime.Now.ToString("MMMM yyyy", System.Globalization.CultureInfo.CurrentCulture);
     public string CurrentMonthYear
     {
         get => _currentMonthYear;
         set => SetProperty(ref _currentMonthYear, value);
     }
+
+    public string RefreshTooltip => LocalizationService.Current.GetString("Overview_RefreshButton_Tooltip");
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
@@ -168,7 +170,7 @@ public class OverviewViewModel : ViewModelBase
             if (inc > maxVal) maxVal = inc;
             if (exp > maxVal) maxVal = exp;
 
-            tempBars.Add((targetMonth.ToString("MMM"), inc, exp));
+            tempBars.Add((targetMonth.ToString("MMM", System.Globalization.CultureInfo.CurrentCulture), inc, exp));
         }
 
         foreach (var bar in tempBars)

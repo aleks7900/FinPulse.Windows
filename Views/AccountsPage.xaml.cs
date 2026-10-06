@@ -28,26 +28,38 @@ public sealed partial class AccountsPage : Page
 
     private async void AddAccountButton_Click(object sender, RoutedEventArgs e)
     {
-        var nameBox = new TextBox { Header = "Account Name", PlaceholderText = "e.g. Main Checking, Savings" };
+        var nameBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_NameHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_NamePlaceholder") 
+        };
         var typeBox = new ComboBox
         {
-            Header = "Account Type",
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_TypeHeader"),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             SelectedIndex = 1
         };
-        typeBox.Items.Add("Cash");
-        typeBox.Items.Add("Bank Account");
-        typeBox.Items.Add("Credit Card");
-        typeBox.Items.Add("Savings Account");
-        typeBox.Items.Add("Investment Account");
-        typeBox.Items.Add("Digital Wallet");
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Cash"));
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Bank"));
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_CreditCard"));
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Savings"));
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Investment"));
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("AccountType_Wallet"));
 
-        var balanceBox = new TextBox { Header = "Starting Balance", PlaceholderText = "0.00" };
-        var institutionBox = new TextBox { Header = "Financial Institution", PlaceholderText = "e.g. Chase, ING, Revolut" };
+        var balanceBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_StartingBalanceHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_AmountPlaceholder") 
+        };
+        var institutionBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_InstitutionHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_InstitutionPlaceholder") 
+        };
 
         var currencyBox = new ComboBox
         {
-            Header = "Currency",
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_CurrencyHeader"),
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
         foreach (var c in CurrencyConfig.SupportedCurrencies)
@@ -65,10 +77,10 @@ public sealed partial class AccountsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Create New Account",
+            Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_CreateTitle"),
             Content = panel,
-            PrimaryButtonText = "Create Account",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_CreateButton"),
+            CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -76,7 +88,8 @@ public sealed partial class AccountsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            string name = string.IsNullOrWhiteSpace(nameBox.Text) ? "New Account" : nameBox.Text.Trim();
+            string defaultName = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Dialog_DefaultName");
+            string name = string.IsNullOrWhiteSpace(nameBox.Text) ? defaultName : nameBox.Text.Trim();
             var type = typeBox.SelectedIndex switch
             {
                 0 => AccountType.CASH,
@@ -87,7 +100,10 @@ public sealed partial class AccountsPage : Page
                 _ => AccountType.WALLET
             };
 
-            decimal.TryParse(balanceBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var bal);
+            if (!decimal.TryParse(balanceBox.Text, NumberStyles.Any, CultureInfo.CurrentCulture, out var bal))
+            {
+                decimal.TryParse(balanceBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out bal);
+            }
             string cur = CurrencyConfig.SupportedCurrencies[Math.Max(0, currencyBox.SelectedIndex)].Code;
 
             await ViewModel.AddAccountAsync(name, type, bal, cur, institutionBox.Text.Trim());
@@ -100,17 +116,25 @@ public sealed partial class AccountsPage : Page
         {
             var alert = new ContentDialog
             {
-                Title = "Transfer Unavailable",
-                Content = "You need at least two accounts to execute a transfer.",
-                CloseButtonText = "OK",
+                Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_UnavailableTitle"),
+                Content = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_UnavailableContent"),
+                CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_OK"),
                 XamlRoot = XamlRoot
             };
             await alert.ShowAsync();
             return;
         }
 
-        var sourceBox = new ComboBox { Header = "From Account", HorizontalAlignment = HorizontalAlignment.Stretch };
-        var destBox = new ComboBox { Header = "To Account", HorizontalAlignment = HorizontalAlignment.Stretch };
+        var sourceBox = new ComboBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_FromAccount"), 
+            HorizontalAlignment = HorizontalAlignment.Stretch 
+        };
+        var destBox = new ComboBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_ToAccount"), 
+            HorizontalAlignment = HorizontalAlignment.Stretch 
+        };
         foreach (var acc in ViewModel.Accounts)
         {
             sourceBox.Items.Add($"{acc.Name} ({acc.FormattedBalance})");
@@ -119,8 +143,16 @@ public sealed partial class AccountsPage : Page
         sourceBox.SelectedIndex = 0;
         destBox.SelectedIndex = 1;
 
-        var amountBox = new TextBox { Header = "Transfer Amount", PlaceholderText = "0.00" };
-        var noteBox = new TextBox { Header = "Transfer Note", PlaceholderText = "Optional reference note" };
+        var amountBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_AmountHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_AmountPlaceholder") 
+        };
+        var noteBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_NoteHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_NotePlaceholder") 
+        };
 
         var panel = new StackPanel { Spacing = 12, Width = 360 };
         panel.Children.Add(sourceBox);
@@ -130,10 +162,10 @@ public sealed partial class AccountsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Transfer Between Accounts",
+            Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_DialogTitle"),
             Content = panel,
-            PrimaryButtonText = "Execute Transfer",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Transfer_ExecuteButton"),
+            CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
@@ -145,7 +177,10 @@ public sealed partial class AccountsPage : Page
             int dIdx = destBox.SelectedIndex;
             if (sIdx >= 0 && dIdx >= 0 && sIdx != dIdx)
             {
-                decimal.TryParse(amountBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out var amt);
+                if (!decimal.TryParse(amountBox.Text, NumberStyles.Any, CultureInfo.CurrentCulture, out var amt))
+                {
+                    decimal.TryParse(amountBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out amt);
+                }
                 if (amt > 0)
                 {
                     await ViewModel.TransferFundsAsync(ViewModel.Accounts[sIdx].Id, ViewModel.Accounts[dIdx].Id, amt, noteBox.Text);
@@ -160,10 +195,10 @@ public sealed partial class AccountsPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Delete Account?",
-            Content = $"Are you sure you want to delete '{ViewModel.SelectedAccount.Name}'? This will remove its historical balance record.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Accounts_Delete_DialogTitle"),
+            Content = FinPulse.Windows.Services.LocalizationService.Current.Format("Accounts_Delete_DialogContent", ViewModel.SelectedAccount.Name),
+            PrimaryButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Delete"),
+            CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };

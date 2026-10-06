@@ -101,9 +101,9 @@ public class Budget
     [JsonIgnore]
     public string StatusText => ConsumedPercentage switch
     {
-        >= 1.0 => "Exceeded",
-        >= 0.85 => "Near Limit",
-        _ => "On Track"
+        >= 1.0 => FinPulse.Windows.Services.LocalizationService.Current.GetString("Budget_Status_Exceeded"),
+        >= 0.85 => FinPulse.Windows.Services.LocalizationService.Current.GetString("Budget_Status_NearLimit"),
+        _ => FinPulse.Windows.Services.LocalizationService.Current.GetString("Budget_Status_OnTrack")
     };
 
     [JsonIgnore]

@@ -118,7 +118,7 @@ public class RecurringViewModel : ViewModelBase
             SourceAccountId = rule.AccountId,
             CategoryId = rule.CategoryId,
             Merchant = rule.Title,
-            Description = $"Recurring: {rule.Title}",
+            Description = LocalizationService.Current.Format("Recurring_TxDescription", rule.Title),
             RecurringRuleId = rule.Id,
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };

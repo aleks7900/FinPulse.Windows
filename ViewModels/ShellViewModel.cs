@@ -17,7 +17,7 @@ public class ShellViewModel : ViewModelBase
         set => SetProperty(ref _currentNavTag, value);
     }
 
-    private string _syncStatusBadge = "Sync: OK";
+    private string _syncStatusBadge = LocalizationService.Current.GetString("Shell_Sync_OK", "Sync: OK");
     public string SyncStatusBadge
     {
         get => _syncStatusBadge;
@@ -40,9 +40,9 @@ public class ShellViewModel : ViewModelBase
         {
             SyncStatusBadge = status switch
             {
-                SyncStatus.SYNCING => "Syncing...",
-                SyncStatus.ERROR => "Sync Error",
-                _ => "Sync: OK"
+                SyncStatus.SYNCING => LocalizationService.Current.GetString("Shell_Sync_Syncing", "Syncing..."),
+                SyncStatus.ERROR => LocalizationService.Current.GetString("Shell_Sync_Error", "Sync Error"),
+                _ => LocalizationService.Current.GetString("Shell_Sync_OK", "Sync: OK")
             };
         };
     }

@@ -1,0 +1,864 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App_Title" xml:space="preserve">
+    <value>FinPulse コンパニオン</value>
+  </data>
+  <data name="AppTitleBar.Title" xml:space="preserve">
+    <value>FinPulse コンパニオン</value>
+  </data>
+  <data name="AppTitleBar.Subtitle" xml:space="preserve">
+    <value>Windows 11 エディション</value>
+  </data>
+  <data name="Nav_BrandTitle.Text" xml:space="preserve">
+    <value>FinPulse</value>
+  </data>
+  <data name="Nav_Overview.Content" xml:space="preserve">
+    <value>概要</value>
+  </data>
+  <data name="Nav_Accounts.Content" xml:space="preserve">
+    <value>口座</value>
+  </data>
+  <data name="Nav_Transactions.Content" xml:space="preserve">
+    <value>取引履歴</value>
+  </data>
+  <data name="Nav_Analytics.Content" xml:space="preserve">
+    <value>分析</value>
+  </data>
+  <data name="Nav_Budgets.Content" xml:space="preserve">
+    <value>予算</value>
+  </data>
+  <data name="Nav_Goals.Content" xml:space="preserve">
+    <value>目標</value>
+  </data>
+  <data name="Nav_Recurring.Content" xml:space="preserve">
+    <value>定期支払い</value>
+  </data>
+  <data name="Nav_Categories.Content" xml:space="preserve">
+    <value>カテゴリ</value>
+  </data>
+  <data name="Nav_Settings.Content" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="Shell_Sync_OK" xml:space="preserve">
+    <value>同期：正常</value>
+  </data>
+  <data name="Shell_Sync_Syncing" xml:space="preserve">
+    <value>同期中...</value>
+  </data>
+  <data name="Shell_Sync_Error" xml:space="preserve">
+    <value>同期エラー</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Of.Text" xml:space="preserve">
+    <value>/</value>
+  </data>
+  <data name="Common_All.Content" xml:space="preserve">
+    <value>すべて</value>
+  </data>
+  <data name="Common_Expense.Content" xml:space="preserve">
+    <value>支出</value>
+  </data>
+  <data name="Common_Income.Content" xml:space="preserve">
+    <value>収入</value>
+  </data>
+  <data name="Common_Transfer.Content" xml:space="preserve">
+    <value>振替</value>
+  </data>
+  <data name="Common_Refund.Content" xml:space="preserve">
+    <value>返金</value>
+  </data>
+  <data name="Common_Manage.Content" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="Common_ViewAll.Content" xml:space="preserve">
+    <value>すべて表示</value>
+  </data>
+  <data name="Common_AmountPlaceholder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="Common_CurrencyHeader" xml:space="preserve">
+    <value>通貨</value>
+  </data>
+  <data name="Overview_ViewAll.Content" xml:space="preserve">
+    <value>すべて表示</value>
+  </data>
+  <data name="Overview_ManageAccounts.Content" xml:space="preserve">
+    <value>管理</value>
+  </data>
+  <data name="Budgets_RemainingSuffix.Text" xml:space="preserve">
+    <value> 残り</value>
+  </data>
+  <data name="AccountType_Cash" xml:space="preserve">
+    <value>現金</value>
+  </data>
+  <data name="AccountType_Bank" xml:space="preserve">
+    <value>銀行口座</value>
+  </data>
+  <data name="AccountType_CreditCard" xml:space="preserve">
+    <value>クレジットカード</value>
+  </data>
+  <data name="AccountType_Savings" xml:space="preserve">
+    <value>普通預金口座</value>
+  </data>
+  <data name="AccountType_Investment" xml:space="preserve">
+    <value>投資口座</value>
+  </data>
+  <data name="AccountType_Wallet" xml:space="preserve">
+    <value>電子マネー</value>
+  </data>
+  <data name="AccountType_Loan" xml:space="preserve">
+    <value>ローン</value>
+  </data>
+  <data name="AccountType_Other" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="Frequency_Daily" xml:space="preserve">
+    <value>毎日</value>
+  </data>
+  <data name="Frequency_Weekly" xml:space="preserve">
+    <value>毎週</value>
+  </data>
+  <data name="Frequency_BiWeekly" xml:space="preserve">
+    <value>2週間ごと</value>
+  </data>
+  <data name="Frequency_Monthly" xml:space="preserve">
+    <value>毎月</value>
+  </data>
+  <data name="Frequency_Quarterly" xml:space="preserve">
+    <value>四半期ごと</value>
+  </data>
+  <data name="Frequency_Yearly" xml:space="preserve">
+    <value>毎年</value>
+  </data>
+  <data name="Frequency_Custom" xml:space="preserve">
+    <value>カスタム</value>
+  </data>
+  <data name="Budget_Status_Exceeded" xml:space="preserve">
+    <value>超過</value>
+  </data>
+  <data name="Budget_Status_NearLimit" xml:space="preserve">
+    <value>上限間近</value>
+  </data>
+  <data name="Budget_Status_OnTrack" xml:space="preserve">
+    <value>順調</value>
+  </data>
+  <data name="Overview_HeaderTitle.Text" xml:space="preserve">
+    <value>FinPulse コンパニオン</value>
+  </data>
+  <data name="Overview_HeaderSubtitle.Text" xml:space="preserve">
+    <value>FinPulse Cloudとリアルタイムに同期された財務状況</value>
+  </data>
+  <data name="Overview_AddTransactionButton.Text" xml:space="preserve">
+    <value>取引を追加</value>
+  </data>
+  <data name="Overview_RefreshButton_Tooltip" xml:space="preserve">
+    <value>更新 (Ctrl+R)</value>
+  </data>
+  <data name="Overview_TotalBalance_Label.Text" xml:space="preserve">
+    <value>総残高</value>
+  </data>
+  <data name="Overview_TotalBalance_Desc.Text" xml:space="preserve">
+    <value>すべてのアクティブ口座の合算</value>
+  </data>
+  <data name="Overview_Income_Label.Text" xml:space="preserve">
+    <value>収入</value>
+  </data>
+  <data name="Overview_ThisMonth_Label.Text" xml:space="preserve">
+    <value>今月</value>
+  </data>
+  <data name="Overview_Expenses_Label.Text" xml:space="preserve">
+    <value>支出</value>
+  </data>
+  <data name="Overview_NetSavings_Label.Text" xml:space="preserve">
+    <value>純貯蓄</value>
+  </data>
+  <data name="Overview_Variance_Label.Text" xml:space="preserve">
+    <value>差額</value>
+  </data>
+  <data name="Overview_CashFlow_Title.Text" xml:space="preserve">
+    <value>キャッシュフロー比較</value>
+  </data>
+  <data name="Overview_CashFlow_Income.Text" xml:space="preserve">
+    <value>収入</value>
+  </data>
+  <data name="Overview_CashFlow_Expense.Text" xml:space="preserve">
+    <value>支出</value>
+  </data>
+  <data name="Overview_RecentTransactions_Title.Text" xml:space="preserve">
+    <value>最近の取引</value>
+  </data>
+  <data name="Overview_Accounts_Title.Text" xml:space="preserve">
+    <value>口座</value>
+  </data>
+  <data name="Overview_Budgets_Title.Text" xml:space="preserve">
+    <value>予算状況</value>
+  </data>
+  <data name="Overview_AllBudgets.Content" xml:space="preserve">
+    <value>すべての予算</value>
+  </data>
+  <data name="Overview_Upcoming_Title.Text" xml:space="preserve">
+    <value>今後の支払い</value>
+  </data>
+  <data name="Overview_ViewRecurring.Content" xml:space="preserve">
+    <value>定期支払い</value>
+  </data>
+  <data name="Accounts_HeaderTitle.Text" xml:space="preserve">
+    <value>口座ポートフォリオ</value>
+  </data>
+  <data name="Accounts_HeaderSubtitle.Text" xml:space="preserve">
+    <value>銀行口座、カード、流動資金を管理</value>
+  </data>
+  <data name="Accounts_TransferButton.Text" xml:space="preserve">
+    <value>資金移動</value>
+  </data>
+  <data name="Accounts_AddAccountButton.Text" xml:space="preserve">
+    <value>口座を追加</value>
+  </data>
+  <data name="Accounts_EmptyState.Text" xml:space="preserve">
+    <value>詳細を表示する口座を選択してください</value>
+  </data>
+  <data name="Accounts_CurrentBalance_Label.Text" xml:space="preserve">
+    <value>現在の残高</value>
+  </data>
+  <data name="Accounts_TotalInflow_Label.Text" xml:space="preserve">
+    <value>総入金</value>
+  </data>
+  <data name="Accounts_TotalOutflow_Label.Text" xml:space="preserve">
+    <value>総出金</value>
+  </data>
+  <data name="Accounts_History_Title.Text" xml:space="preserve">
+    <value>口座の取引履歴</value>
+  </data>
+  <data name="Accounts_Dialog_CreateTitle" xml:space="preserve">
+    <value>新規口座を作成</value>
+  </data>
+  <data name="Accounts_Dialog_NameHeader" xml:space="preserve">
+    <value>口座名</value>
+  </data>
+  <data name="Accounts_Dialog_NamePlaceholder" xml:space="preserve">
+    <value>例: メイン口座、普通預金</value>
+  </data>
+  <data name="Accounts_Dialog_TypeHeader" xml:space="preserve">
+    <value>口座種別</value>
+  </data>
+  <data name="Accounts_Dialog_StartingBalanceHeader" xml:space="preserve">
+    <value>開始残高</value>
+  </data>
+  <data name="Accounts_Dialog_InstitutionHeader" xml:space="preserve">
+    <value>金融機関</value>
+  </data>
+  <data name="Accounts_Dialog_InstitutionPlaceholder" xml:space="preserve">
+    <value>例: 三菱UFJ銀行、三井住友銀行、Revolut</value>
+  </data>
+  <data name="Accounts_Dialog_CreateButton" xml:space="preserve">
+    <value>口座を作成</value>
+  </data>
+  <data name="Accounts_Dialog_DefaultName" xml:space="preserve">
+    <value>新しい口座</value>
+  </data>
+  <data name="Accounts_Transfer_UnavailableTitle" xml:space="preserve">
+    <value>振替不可</value>
+  </data>
+  <data name="Accounts_Transfer_UnavailableContent" xml:space="preserve">
+    <value>振替を実行するには少なくとも2つの口座が必要です。</value>
+  </data>
+  <data name="Accounts_Transfer_FromAccount" xml:space="preserve">
+    <value>出金元口座</value>
+  </data>
+  <data name="Accounts_Transfer_ToAccount" xml:space="preserve">
+    <value>入金先口座</value>
+  </data>
+  <data name="Accounts_Transfer_AmountHeader" xml:space="preserve">
+    <value>振替金額</value>
+  </data>
+  <data name="Accounts_Transfer_NoteHeader" xml:space="preserve">
+    <value>振替メモ</value>
+  </data>
+  <data name="Accounts_Transfer_NotePlaceholder" xml:space="preserve">
+    <value>任意の参照メモ</value>
+  </data>
+  <data name="Accounts_Transfer_DialogTitle" xml:space="preserve">
+    <value>口座間振替</value>
+  </data>
+  <data name="Accounts_Transfer_ExecuteButton" xml:space="preserve">
+    <value>振替を実行</value>
+  </data>
+  <data name="Accounts_Delete_DialogTitle" xml:space="preserve">
+    <value>口座を削除しますか？</value>
+  </data>
+  <data name="Accounts_Delete_DialogContent" xml:space="preserve">
+    <value>「{0}」を削除してもよろしいですか？残高の履歴レコードが削除されます。</value>
+  </data>
+  <data name="Budgets_HeaderTitle.Text" xml:space="preserve">
+    <value>予算管理</value>
+  </data>
+  <data name="Budgets_HeaderSubtitle.Text" xml:space="preserve">
+    <value>カテゴリごとの支出上限と消化ペースを把握</value>
+  </data>
+  <data name="Budgets_NewBudgetButton.Text" xml:space="preserve">
+    <value>新規予算</value>
+  </data>
+  <data name="Budgets_TotalLimit_Label.Text" xml:space="preserve">
+    <value>総予算上限</value>
+  </data>
+  <data name="Budgets_TotalSpent_Label.Text" xml:space="preserve">
+    <value>今月の総支出</value>
+  </data>
+  <data name="Budgets_Remaining_Label.Text" xml:space="preserve">
+    <value>残り予算枠</value>
+  </data>
+  <data name="Budgets_ActiveBudgets_Title.Text" xml:space="preserve">
+    <value>有効な予算</value>
+  </data>
+  <data name="Budgets_Dialog_CreateTitle" xml:space="preserve">
+    <value>新規予算を作成</value>
+  </data>
+  <data name="Budgets_Dialog_NameHeader" xml:space="preserve">
+    <value>予算名</value>
+  </data>
+  <data name="Budgets_Dialog_NamePlaceholder" xml:space="preserve">
+    <value>例: 食費・食料品、エンタメ</value>
+  </data>
+  <data name="Budgets_Dialog_CategoryHeader" xml:space="preserve">
+    <value>支出カテゴリ</value>
+  </data>
+  <data name="Budgets_Dialog_LimitHeader" xml:space="preserve">
+    <value>月次上限額</value>
+  </data>
+  <data name="Budgets_Dialog_CreateButton" xml:space="preserve">
+    <value>予算を作成</value>
+  </data>
+  <data name="Budgets_Delete_DialogTitle" xml:space="preserve">
+    <value>予算を削除しますか？</value>
+  </data>
+  <data name="Budgets_Delete_DialogContent" xml:space="preserve">
+    <value>この予算を削除してもよろしいですか？</value>
+  </data>
+  <data name="Categories_HeaderTitle.Text" xml:space="preserve">
+    <value>カテゴリ一覧</value>
+  </data>
+  <data name="Categories_HeaderSubtitle.Text" xml:space="preserve">
+    <value>事前設定済みおよびカスタムの収支分類グループ</value>
+  </data>
+  <data name="Categories_AddCategoryButton.Text" xml:space="preserve">
+    <value>カテゴリを追加</value>
+  </data>
+  <data name="Categories_ExpenseCategories_Title.Text" xml:space="preserve">
+    <value>支出カテゴリ</value>
+  </data>
+  <data name="Categories_IncomeCategories_Title.Text" xml:space="preserve">
+    <value>収入カテゴリ</value>
+  </data>
+  <data name="Categories_DefaultBadge.Text" xml:space="preserve">
+    <value>初期値</value>
+  </data>
+  <data name="Categories_Dialog_AddTitle" xml:space="preserve">
+    <value>カスタムカテゴリを追加</value>
+  </data>
+  <data name="Categories_Dialog_NameHeader" xml:space="preserve">
+    <value>カテゴリ名</value>
+  </data>
+  <data name="Categories_Dialog_NamePlaceholder" xml:space="preserve">
+    <value>例: ソフトウェア、趣味、フリーランス</value>
+  </data>
+  <data name="Categories_Dialog_TypeHeader" xml:space="preserve">
+    <value>カテゴリ種別</value>
+  </data>
+  <data name="Categories_Dialog_SaveButton" xml:space="preserve">
+    <value>カテゴリを保存</value>
+  </data>
+  <data name="Category_Uncategorized" xml:space="preserve">
+    <value>未分類</value>
+  </data>
+  <data name="Goals_HeaderTitle.Text" xml:space="preserve">
+    <value>貯蓄目標</value>
+  </data>
+  <data name="Goals_HeaderSubtitle.Text" xml:space="preserve">
+    <value>目標マイルストーンの設定、月々の積立計算、入金管理</value>
+  </data>
+  <data name="Goals_NewGoalButton.Text" xml:space="preserve">
+    <value>新規目標</value>
+  </data>
+  <data name="Goals_RemainingToTarget.Text" xml:space="preserve">
+    <value>目標まで残り</value>
+  </data>
+  <data name="Goals_SuggestedContribution_Label.Text" xml:space="preserve">
+    <value>推奨積立額</value>
+  </data>
+  <data name="Goals_PerMonth_Label.Text" xml:space="preserve">
+    <value>期日までに必要な月額</value>
+  </data>
+  <data name="Goals_DepositButton.Text" xml:space="preserve">
+    <value>入金</value>
+  </data>
+  <data name="Goals_Dialog_CreateTitle" xml:space="preserve">
+    <value>財務目標を作成</value>
+  </data>
+  <data name="Goals_Dialog_TitleHeader" xml:space="preserve">
+    <value>目標タイトル</value>
+  </data>
+  <data name="Goals_Dialog_TitlePlaceholder" xml:space="preserve">
+    <value>例: 新しいPC、旅行、緊急資金</value>
+  </data>
+  <data name="Goals_Dialog_AmountHeader" xml:space="preserve">
+    <value>目標金額</value>
+  </data>
+  <data name="Goals_Dialog_DeadlineHeader" xml:space="preserve">
+    <value>目標期日</value>
+  </data>
+  <data name="Goals_Dialog_LinkedAccountHeader" xml:space="preserve">
+    <value>関連口座（任意）</value>
+  </data>
+  <data name="Goals_Dialog_CreateButton" xml:space="preserve">
+    <value>目標を作成</value>
+  </data>
+  <data name="Goals_Dialog_DefaultTitle" xml:space="preserve">
+    <value>貯蓄目標</value>
+  </data>
+  <data name="Goals_Deposit_DialogTitle" xml:space="preserve">
+    <value>目標への積立</value>
+  </data>
+  <data name="Goals_Deposit_Prompt" xml:space="preserve">
+    <value>「{0}」に資金を入金</value>
+  </data>
+  <data name="Goals_Deposit_AmountHeader" xml:space="preserve">
+    <value>入金金額</value>
+  </data>
+  <data name="Goals_Deposit_ExecuteButton" xml:space="preserve">
+    <value>入金を実行</value>
+  </data>
+  <data name="Goals_Delete_DialogTitle" xml:space="preserve">
+    <value>目標を削除しますか？</value>
+  </data>
+  <data name="Goals_Delete_DialogContent" xml:space="preserve">
+    <value>この貯蓄目標を削除してもよろしいですか？</value>
+  </data>
+  <data name="QuickAdd_Title.Title" xml:space="preserve">
+    <value>取引を追加</value>
+  </data>
+  <data name="QuickAdd_SaveButton.Content" xml:space="preserve">
+    <value>取引を保存</value>
+  </data>
+  <data name="QuickAdd_AmountHeader.Text" xml:space="preserve">
+    <value>金額</value>
+  </data>
+  <data name="QuickAdd_AmountBox.PlaceholderText" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="QuickAdd_TypeHeader.Header" xml:space="preserve">
+    <value>取引種別</value>
+  </data>
+  <data name="QuickAdd_SourceAccountHeader.Header" xml:space="preserve">
+    <value>出金元口座</value>
+  </data>
+  <data name="QuickAdd_DestinationAccountHeader.Header" xml:space="preserve">
+    <value>入金先口座</value>
+  </data>
+  <data name="QuickAdd_CategoryHeader.Header" xml:space="preserve">
+    <value>カテゴリ</value>
+  </data>
+  <data name="QuickAdd_MerchantHeader.Header" xml:space="preserve">
+    <value>加盟店 / 支払先</value>
+  </data>
+  <data name="QuickAdd_MerchantHeader.PlaceholderText" xml:space="preserve">
+    <value>例: Spotify、セブンイレブン、ENEOS</value>
+  </data>
+  <data name="QuickAdd_DescriptionHeader.Header" xml:space="preserve">
+    <value>説明 / メモ</value>
+  </data>
+  <data name="QuickAdd_DescriptionHeader.PlaceholderText" xml:space="preserve">
+    <value>任意の詳細メモ</value>
+  </data>
+  <data name="QuickAdd_DateHeader.Header" xml:space="preserve">
+    <value>日付</value>
+  </data>
+  <data name="QuickAdd_Error_Title.Title" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="QuickAdd_Error_InvalidAmount" xml:space="preserve">
+    <value>0より大きい金額を入力してください。</value>
+  </data>
+  <data name="QuickAdd_Error_NoSourceAccount" xml:space="preserve">
+    <value>出金元口座を選択してください。</value>
+  </data>
+  <data name="QuickAdd_Error_NoDestinationAccount" xml:space="preserve">
+    <value>振替先の入金口座を選択してください。</value>
+  </data>
+  <data name="QuickAdd_Error_SameAccounts" xml:space="preserve">
+    <value>出金元と入金先の口座は別々にする必要があります。</value>
+  </data>
+  <data name="QuickAdd_DefaultDescription" xml:space="preserve">
+    <value>クイック取引</value>
+  </data>
+  <data name="Recurring_HeaderTitle.Text" xml:space="preserve">
+    <value>定期支払いとサブスクリプション</value>
+  </data>
+  <data name="Recurring_HeaderSubtitle.Text" xml:space="preserve">
+    <value>今後の支払いを管理、月額コストを試算し、支払い履歴を記録</value>
+  </data>
+  <data name="Recurring_AddButton.Text" xml:space="preserve">
+    <value>定期支払いを追加</value>
+  </data>
+  <data name="Recurring_MonthlyBurden_Label.Text" xml:space="preserve">
+    <value>月次の固定費負担</value>
+  </data>
+  <data name="Recurring_MonthlyBurden_Desc.Text" xml:space="preserve">
+    <value>有効な定期購読の月間予想合計コスト</value>
+  </data>
+  <data name="Recurring_AnnualBurden_Label.Text" xml:space="preserve">
+    <value>年換算の固定費負担</value>
+  </data>
+  <data name="Recurring_AnnualBurden_Desc.Text" xml:space="preserve">
+    <value>年間12か月の予想サブスクリプション支出合計</value>
+  </data>
+  <data name="Recurring_UpcomingSchedule_Title.Text" xml:space="preserve">
+    <value>今後のスケジュール</value>
+  </data>
+  <data name="Recurring_NextDueDate_Label.Text" xml:space="preserve">
+    <value>次回期日</value>
+  </data>
+  <data name="Recurring_MarkPaidButton.Text" xml:space="preserve">
+    <value>支払済みにする</value>
+  </data>
+  <data name="Recurring_Dialog_AddTitle" xml:space="preserve">
+    <value>定期支払いプランを追加</value>
+  </data>
+  <data name="Recurring_Dialog_TitleHeader" xml:space="preserve">
+    <value>定期購読 / 請求書の名称</value>
+  </data>
+  <data name="Recurring_Dialog_TitlePlaceholder" xml:space="preserve">
+    <value>例: インターネット、Spotify、ジム</value>
+  </data>
+  <data name="Recurring_Dialog_AmountHeader" xml:space="preserve">
+    <value>請求金額</value>
+  </data>
+  <data name="Recurring_Dialog_FrequencyHeader" xml:space="preserve">
+    <value>請求頻度</value>
+  </data>
+  <data name="Recurring_Dialog_AccountHeader" xml:space="preserve">
+    <value>支払口座</value>
+  </data>
+  <data name="Recurring_Dialog_CategoryHeader" xml:space="preserve">
+    <value>カテゴリ</value>
+  </data>
+  <data name="Recurring_Dialog_DueDateHeader" xml:space="preserve">
+    <value>初回 / 次回期日</value>
+  </data>
+  <data name="Recurring_Dialog_SaveButton" xml:space="preserve">
+    <value>ルールを保存</value>
+  </data>
+  <data name="Recurring_Dialog_DefaultTitle" xml:space="preserve">
+    <value>定期支払い</value>
+  </data>
+  <data name="Recurring_Delete_DialogTitle" xml:space="preserve">
+    <value>定期支払いを削除しますか？</value>
+  </data>
+  <data name="Recurring_Delete_DialogContent" xml:space="preserve">
+    <value>この定期支払いスケジュールを削除してもよろしいですか？</value>
+  </data>
+  <data name="Recurring_TxDescription" xml:space="preserve">
+    <value>定期支払い: {0}</value>
+  </data>
+  <data name="Transactions_HeaderTitle.Text" xml:space="preserve">
+    <value>取引台帳</value>
+  </data>
+  <data name="Transactions_HeaderSubtitle.Text" xml:space="preserve">
+    <value>複数列フィルタと検索を備えた包括的なテーブル表示</value>
+  </data>
+  <data name="Transactions_AddButton.Text" xml:space="preserve">
+    <value>取引を追加</value>
+  </data>
+  <data name="Transactions_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>店舗、メモを検索...</value>
+  </data>
+  <data name="Transactions_Filter_AllAccounts.PlaceholderText" xml:space="preserve">
+    <value>すべての口座</value>
+  </data>
+  <data name="Transactions_Filter_AllCategories.PlaceholderText" xml:space="preserve">
+    <value>すべてのカテゴリ</value>
+  </data>
+  <data name="Transactions_Date_AllTime.Content" xml:space="preserve">
+    <value>全期間</value>
+  </data>
+  <data name="Transactions_Date_ThisMonth.Content" xml:space="preserve">
+    <value>今月</value>
+  </data>
+  <data name="Transactions_Date_LastMonth.Content" xml:space="preserve">
+    <value>先月</value>
+  </data>
+  <data name="Transactions_Date_ThisYear.Content" xml:space="preserve">
+    <value>今年</value>
+  </data>
+  <data name="Transactions_ResetFilters_Tooltip" xml:space="preserve">
+    <value>フィルタをリセット</value>
+  </data>
+  <data name="Transactions_Col_Date.Text" xml:space="preserve">
+    <value>日付</value>
+  </data>
+  <data name="Transactions_Col_Description.Text" xml:space="preserve">
+    <value>説明 / 店舗</value>
+  </data>
+  <data name="Transactions_Col_Category.Text" xml:space="preserve">
+    <value>カテゴリ</value>
+  </data>
+  <data name="Transactions_Col_Account.Text" xml:space="preserve">
+    <value>口座</value>
+  </data>
+  <data name="Transactions_Col_Type.Text" xml:space="preserve">
+    <value>種別</value>
+  </data>
+  <data name="Transactions_Col_Amount.Text" xml:space="preserve">
+    <value>金額</value>
+  </data>
+  <data name="Transactions_Footer_MatchingRecords.Text" xml:space="preserve">
+    <value>一致するレコード:</value>
+  </data>
+  <data name="Transactions_Footer_NetTotal.Text" xml:space="preserve">
+    <value>純合計:</value>
+  </data>
+  <data name="Transactions_Delete_DialogTitle" xml:space="preserve">
+    <value>取引を削除しますか？</value>
+  </data>
+  <data name="Transactions_Delete_DialogContent" xml:space="preserve">
+    <value>この取引を削除してもよろしいですか？口座残高は自動的に更新されます。</value>
+  </data>
+  <data name="Analytics_HeaderTitle.Text" xml:space="preserve">
+    <value>財務分析</value>
+  </data>
+  <data name="Analytics_HeaderSubtitle.Text" xml:space="preserve">
+    <value>支出傾向、カテゴリ別割合、複数期間の各種指標</value>
+  </data>
+  <data name="Analytics_Period_7Days.Content" xml:space="preserve">
+    <value>過去7日間</value>
+  </data>
+  <data name="Analytics_Period_30Days.Content" xml:space="preserve">
+    <value>過去30日間</value>
+  </data>
+  <data name="Analytics_Period_3Months.Content" xml:space="preserve">
+    <value>過去3か月</value>
+  </data>
+  <data name="Analytics_Period_6Months.Content" xml:space="preserve">
+    <value>過去6か月</value>
+  </data>
+  <data name="Analytics_Period_1Year.Content" xml:space="preserve">
+    <value>過去1年間</value>
+  </data>
+  <data name="Analytics_PeriodIncome_Label.Text" xml:space="preserve">
+    <value>期間中の収入</value>
+  </data>
+  <data name="Analytics_PeriodExpenses_Label.Text" xml:space="preserve">
+    <value>期間中の支出</value>
+  </data>
+  <data name="Analytics_SavingsRate_Label.Text" xml:space="preserve">
+    <value>貯蓄率</value>
+  </data>
+  <data name="Analytics_DailyBurn_Label.Text" xml:space="preserve">
+    <value>日次消費ペース</value>
+  </data>
+  <data name="Analytics_SpendingByCategory_Title.Text" xml:space="preserve">
+    <value>カテゴリ別支出</value>
+  </data>
+  <data name="Analytics_MonthlyTrend_Title.Text" xml:space="preserve">
+    <value>月次収支トレンド</value>
+  </data>
+  <data name="Analytics_NetVariance_Label.Text" xml:space="preserve">
+    <value>純差額</value>
+  </data>
+  <data name="Settings_HeaderTitle.Text" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="Settings_HeaderSubtitle.Text" xml:space="preserve">
+    <value>各種設定、複数通貨のデフォルト、クラウド同期</value>
+  </data>
+  <data name="Settings_GoogleSection_Title.Text" xml:space="preserve">
+    <value>Google アカウントとクラウドID</value>
+  </data>
+  <data name="Settings_GoogleSection_Subtitle.Text" xml:space="preserve">
+    <value>Google アカウントを接続して Cloud Firestore 経由で Android と Windows 間を同期</value>
+  </data>
+  <data name="Settings_GoogleAccountBadge.Text" xml:space="preserve">
+    <value>Google アカウント</value>
+  </data>
+  <data name="Settings_SignOutButton.Text" xml:space="preserve">
+    <value>サインアウト</value>
+  </data>
+  <data name="Settings_NotSignedIn.Text" xml:space="preserve">
+    <value>サインインしていません</value>
+  </data>
+  <data name="Settings_SignInPrompt.Text" xml:space="preserve">
+    <value>Google アカウントでサインインして、Android とのリアルタイムなクラウド同期を有効にします。</value>
+  </data>
+  <data name="Settings_SignInGoogleButton.Text" xml:space="preserve">
+    <value>Google でサインイン</value>
+  </data>
+  <data name="Settings_SignInEmailButton.Text" xml:space="preserve">
+    <value>メール</value>
+  </data>
+  <data name="Settings_Appearance_Title.Text" xml:space="preserve">
+    <value>外観と表示</value>
+  </data>
+  <data name="Settings_Theme_Label.Text" xml:space="preserve">
+    <value>アプリのテーマ</value>
+  </data>
+  <data name="Settings_Theme_Desc.Text" xml:space="preserve">
+    <value>お好みのFluentカラーテーマを選択してください</value>
+  </data>
+  <data name="Theme_System.Content" xml:space="preserve">
+    <value>システム</value>
+  </data>
+  <data name="Theme_Light.Content" xml:space="preserve">
+    <value>ライト</value>
+  </data>
+  <data name="Theme_Dark.Content" xml:space="preserve">
+    <value>ダーク</value>
+  </data>
+  <data name="Settings_Privacy_Label.Text" xml:space="preserve">
+    <value>プライバシーモード</value>
+  </data>
+  <data name="Settings_Privacy_Desc.Text" xml:space="preserve">
+    <value>ダッシュボード上で残高金額を非表示にする</value>
+  </data>
+  <data name="Settings_Language_Title.Text" xml:space="preserve">
+    <value>言語と地域</value>
+  </data>
+  <data name="Settings_Language_Label.Text" xml:space="preserve">
+    <value>アプリの言語</value>
+  </data>
+  <data name="Settings_Language_Desc.Text" xml:space="preserve">
+    <value>表示する言語を選択してください</value>
+  </data>
+  <data name="Language_SystemDefault" xml:space="preserve">
+    <value>システム既定</value>
+  </data>
+  <data name="Settings_Currency_Title.Text" xml:space="preserve">
+    <value>通貨と地域フォーマット</value>
+  </data>
+  <data name="Settings_BaseCurrency_Label.Text" xml:space="preserve">
+    <value>全体の基準通貨</value>
+  </data>
+  <data name="Settings_BaseCurrency_Desc.Text" xml:space="preserve">
+    <value>集計残高や新規口座作成時のデフォルト通貨</value>
+  </data>
+  <data name="Settings_Sync_Title.Text" xml:space="preserve">
+    <value>Firebase クラウド同期</value>
+  </data>
+  <data name="Settings_SyncNowButton.Text" xml:space="preserve">
+    <value>今すぐ同期</value>
+  </data>
+  <data name="Settings_SyncStatus_Label.Text" xml:space="preserve">
+    <value>ステータス</value>
+  </data>
+  <data name="Settings_LastSynced_Label.Text" xml:space="preserve">
+    <value>最終同期日時</value>
+  </data>
+  <data name="Settings_PendingChanges_Label.Text" xml:space="preserve">
+    <value>保留中の変更</value>
+  </data>
+  <data name="Settings_Sync_Description.Text" xml:space="preserve">
+    <value>FinPulse コンパニオンは、双方向の Last-Write-Wins 競合解決を使用して Google Cloud Firestore プロジェクト「finpulse-cloud」と同期します。</value>
+  </data>
+  <data name="Settings_About_AppName.Text" xml:space="preserve">
+    <value>FinPulse コンパニオン</value>
+  </data>
+  <data name="Settings_About_Version.Text" xml:space="preserve">
+    <value>バージョン 1.0.0 • Windows 11 Fluent エディション</value>
+  </data>
+  <data name="Settings_About_Description.Text" xml:space="preserve">
+    <value>FinPulse Android アプリのネイティブ コンパニオン。C#、WinUI 3、Windows App SDK、Mica マテリアル、機関レベルの複式簿記を採用。</value>
+  </data>
+  <data name="Settings_SignInDialog_Title" xml:space="preserve">
+    <value>FinPulse にサインイン</value>
+  </data>
+  <data name="Settings_SignInDialog_EmailHeader" xml:space="preserve">
+    <value>メールアドレス</value>
+  </data>
+  <data name="Settings_SignInDialog_PasswordHeader" xml:space="preserve">
+    <value>パスワード</value>
+  </data>
+  <data name="Settings_SignInDialog_Button" xml:space="preserve">
+    <value>サインイン</value>
+  </data>
+  <data name="Settings_GoogleDialog_Title" xml:space="preserve">
+    <value>Google でサインイン</value>
+  </data>
+  <data name="Settings_GoogleDialog_Prompt" xml:space="preserve">
+    <value>Google アカウントを接続して、口座、取引、予算を Android 版 FinPulse と同期します。</value>
+  </data>
+  <data name="Settings_GoogleDialog_BrowserButton" xml:space="preserve">
+    <value>システムのWebブラウザーでサインイン (OAuth 2.0)</value>
+  </data>
+  <data name="Settings_GoogleDialog_EmailHeader" xml:space="preserve">
+    <value>Google アカウントのメール</value>
+  </data>
+  <data name="Settings_GoogleDialog_NameHeader" xml:space="preserve">
+    <value>表示名（任意）</value>
+  </data>
+  <data name="Settings_GoogleDialog_ConnectButton" xml:space="preserve">
+    <value>Google アカウントを接続</value>
+  </data>
+  <data name="Sync_Status_Syncing" xml:space="preserve">
+    <value>同期を実行中...</value>
+  </data>
+  <data name="Sync_Status_Synchronized" xml:space="preserve">
+    <value>Firestoreと同期完了</value>
+  </data>
+  <data name="Sync_Status_Error" xml:space="preserve">
+    <value>同期エラー: {0}</value>
+  </data>
+  <data name="Sync_Status_Idle" xml:space="preserve">
+    <value>待機中</value>
+  </data>
+  <data name="Sync_LastSync_Never" xml:space="preserve">
+    <value>なし</value>
+  </data>
+  <data name="Busy_Syncing" xml:space="preserve">
+    <value>FinPulse クラウドと同期中...</value>
+  </data>
+  <data name="Busy_SigningInGoogle" xml:space="preserve">
+    <value>Google アカウントでサインイン中...</value>
+  </data>
+  <data name="Busy_ConnectingGoogle" xml:space="preserve">
+    <value>Google アカウントを接続中...</value>
+  </data>
+  <data name="Busy_AuthenticatingToken" xml:space="preserve">
+    <value>Google ID トークンを認証中...</value>
+  </data>
+  <data name="Busy_SigningInEmail" xml:space="preserve">
+    <value>FinPulse アカウントでサインイン中...</value>
+  </data>
+  <data name="Notification_BudgetAlert_Title" xml:space="preserve">
+    <value>予算アラート</value>
+  </data>
+  <data name="Notification_BudgetAlert_Body" xml:space="preserve">
+    <value>「{0}」の予算が上限の{1}%に達しました。</value>
+  </data>
+  <data name="Notification_BillDue_Title" xml:space="preserve">
+    <value>支払期日のお知らせ</value>
+  </data>
+  <data name="Notification_BillDue_Body" xml:space="preserve">
+    <value>「{0}」（{1}）の支払いは {2} に予定されています。</value>
+  </data>
+</root>

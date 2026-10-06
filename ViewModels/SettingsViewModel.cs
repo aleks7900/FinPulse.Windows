@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -16,6 +17,7 @@ public class SettingsViewModel : ViewModelBase
     private readonly IAuthService _authService;
 
     public ObservableCollection<CurrencyMetadata> AvailableCurrencies { get; } = new();
+    public ObservableCollection<LanguageOption> AvailableLanguages { get; } = new();
 
     private CurrencyMetadata? _selectedCurrency;
     public CurrencyMetadata? SelectedCurrency
@@ -26,6 +28,19 @@ public class SettingsViewModel : ViewModelBase
             if (SetProperty(ref _selectedCurrency, value) && value != null)
             {
                 _ = UpdateBaseCurrencyAsync(value.Code);
+            }
+        }
+    }
+
+    private LanguageOption? _selectedLanguage;
+    public LanguageOption? SelectedLanguage
+    {
+        get => _selectedLanguage;
+        set
+        {
+            if (SetProperty(ref _selectedLanguage, value) && value != null)
+            {
+                _ = UpdateLanguageAsync(value.Code);
             }
         }
     }
@@ -121,13 +136,22 @@ public class SettingsViewModel : ViewModelBase
 
     public async Task InitializeAsync()
     {
+        AvailableCurrencies.Clear();
         foreach (var c in CurrencyConfig.SupportedCurrencies)
         {
             AvailableCurrencies.Add(c);
         }
 
+        AvailableLanguages.Clear();
+        foreach (var lang in LocalizationService.Current.SupportedLanguages)
+        {
+            AvailableLanguages.Add(lang);
+        }
+
         var settings = await _store.GetSettingsAsync();
         SelectedCurrency = AvailableCurrencies.FirstOrDefault(c => c.Code == settings.BaseCurrencyCode) ?? AvailableCurrencies.FirstOrDefault(c => c.Code == "EUR");
+        SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code.Equals(settings.SelectedLanguage, StringComparison.OrdinalIgnoreCase))
+                           ?? AvailableLanguages.FirstOrDefault(l => l.Code == "SYSTEM");
         SelectedTheme = settings.DarkMode ?? "System";
         HideBalances = settings.HideBalances;
 
@@ -137,25 +161,27 @@ public class SettingsViewModel : ViewModelBase
 
     private void UpdateSyncStatus()
     {
+        var loc = LocalizationService.Current;
         SyncStatusText = _syncService.CurrentStatus switch
         {
-            SyncStatus.SYNCING => "Syncing in progress...",
-            SyncStatus.SUCCESS => "Synchronized with Firestore",
-            SyncStatus.ERROR => $"Sync error: {_syncService.LastErrorMessage}",
-            _ => "Idle"
+            SyncStatus.SYNCING => loc.GetString("Sync_Status_Syncing"),
+            SyncStatus.SUCCESS => loc.GetString("Sync_Status_Synchronized"),
+            SyncStatus.ERROR => loc.Format("Sync_Status_Error", _syncService.LastErrorMessage ?? string.Empty),
+            _ => loc.GetString("Sync_Status_Idle")
         };
 
         LastSyncText = _syncService.LastSyncTimestamp > 0
-            ? DateTimeOffset.FromUnixTimeMilliseconds(_syncService.LastSyncTimestamp).LocalDateTime.ToString("MMM dd, yyyy HH:mm:ss")
-            : "Never";
+            ? DateTimeOffset.FromUnixTimeMilliseconds(_syncService.LastSyncTimestamp).LocalDateTime.ToString("MMM dd, yyyy HH:mm:ss", CultureInfo.CurrentCulture)
+            : loc.GetString("Sync_LastSync_Never");
 
         PendingChanges = _syncService.PendingChangesCount;
     }
 
     public async Task PerformSyncAsync()
     {
+        var loc = LocalizationService.Current;
         IsBusy = true;
-        BusyMessage = "Synchronizing with FinPulse cloud...";
+        BusyMessage = loc.GetString("Busy_Syncing");
         try
         {
             var res = await _syncService.PerformFullSyncAsync();
@@ -166,6 +192,28 @@ public class SettingsViewModel : ViewModelBase
             IsBusy = false;
             BusyMessage = null;
         }
+    }
+
+    private async Task UpdateLanguageAsync(string code)
+    {
+        var settings = await _store.GetSettingsAsync();
+        if (settings.SelectedLanguage == code) return;
+
+        settings.SelectedLanguage = code;
+        await _store.SaveSettingsAsync(settings);
+        LocalizationService.Current.ApplyLanguage(code);
+
+        // Refresh language list items in case display name of System Default changed
+        var currentCode = code;
+        AvailableLanguages.Clear();
+        foreach (var lang in LocalizationService.Current.SupportedLanguages)
+        {
+            AvailableLanguages.Add(lang);
+        }
+        _selectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code.Equals(currentCode, StringComparison.OrdinalIgnoreCase))
+                            ?? AvailableLanguages.FirstOrDefault(l => l.Code == "SYSTEM");
+        OnPropertyChanged(nameof(SelectedLanguage));
+        UpdateSyncStatus();
     }
 
     private async Task UpdateBaseCurrencyAsync(string code)
@@ -203,8 +251,9 @@ public class SettingsViewModel : ViewModelBase
 
     public async Task SignInGoogleAsync()
     {
+        var loc = LocalizationService.Current;
         IsBusy = true;
-        BusyMessage = "Signing in with Google Account...";
+        BusyMessage = loc.GetString("Busy_SigningInGoogle");
         try
         {
             await _authService.SignInWithGoogleAsync();
@@ -223,8 +272,9 @@ public class SettingsViewModel : ViewModelBase
 
     public async Task SignInGoogleAccountAsync(string email, string? displayName = null)
     {
+        var loc = LocalizationService.Current;
         IsBusy = true;
-        BusyMessage = "Connecting Google Account...";
+        BusyMessage = loc.GetString("Busy_ConnectingGoogle");
         try
         {
             await _authService.SignInWithGoogleAccountAsync(email, displayName);
@@ -243,8 +293,9 @@ public class SettingsViewModel : ViewModelBase
 
     public async Task SignInGoogleTokenAsync(string idToken)
     {
+        var loc = LocalizationService.Current;
         IsBusy = true;
-        BusyMessage = "Authenticating Google ID Token...";
+        BusyMessage = loc.GetString("Busy_AuthenticatingToken");
         try
         {
             await _authService.SignInWithGoogleTokenAsync(idToken);
@@ -263,8 +314,9 @@ public class SettingsViewModel : ViewModelBase
 
     public async Task SignInEmailAsync(string email, string password)
     {
+        var loc = LocalizationService.Current;
         IsBusy = true;
-        BusyMessage = "Signing in with FinPulse Account...";
+        BusyMessage = loc.GetString("Busy_SigningInEmail");
         try
         {
             await _authService.SignInWithEmailPasswordAsync(email, password);

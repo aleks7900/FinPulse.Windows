@@ -143,28 +143,29 @@ public class QuickAddViewModel : ViewModelBase
 
     public async Task<bool> SaveTransactionAsync()
     {
+        var loc = LocalizationService.Current;
         ErrorMessage = null;
         if (Amount <= 0)
         {
-            ErrorMessage = "Please enter an amount greater than 0.";
+            ErrorMessage = loc.GetString("QuickAdd_Error_InvalidAmount");
             return false;
         }
 
         if (SelectedSourceAccount == null)
         {
-            ErrorMessage = "Please select a source account.";
+            ErrorMessage = loc.GetString("QuickAdd_Error_NoSourceAccount");
             return false;
         }
 
         if (IsTransfer && SelectedDestinationAccount == null)
         {
-            ErrorMessage = "Please select a destination account for transfer.";
+            ErrorMessage = loc.GetString("QuickAdd_Error_NoDestinationAccount");
             return false;
         }
 
         if (IsTransfer && SelectedSourceAccount.Id == SelectedDestinationAccount?.Id)
         {
-            ErrorMessage = "Source and destination accounts must be different.";
+            ErrorMessage = loc.GetString("QuickAdd_Error_SameAccounts");
             return false;
         }
 
@@ -180,7 +181,7 @@ public class QuickAddViewModel : ViewModelBase
             DestinationAccountId = IsTransfer ? SelectedDestinationAccount?.Id : null,
             CategoryId = catId,
             Merchant = string.IsNullOrWhiteSpace(Merchant) ? null : Merchant.Trim(),
-            Description = string.IsNullOrWhiteSpace(Description) ? (Merchant ?? "Quick Transaction") : Description.Trim(),
+            Description = string.IsNullOrWhiteSpace(Description) ? (Merchant ?? loc.GetString("QuickAdd_DefaultDescription")) : Description.Trim(),
             Timestamp = TransactionDate.ToUnixTimeMilliseconds()
         };
 

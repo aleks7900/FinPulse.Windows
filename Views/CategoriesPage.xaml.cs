@@ -27,15 +27,19 @@ public sealed partial class CategoriesPage : Page
 
     private async void AddCategoryButton_Click(object sender, RoutedEventArgs e)
     {
-        var nameBox = new TextBox { Header = "Category Name", PlaceholderText = "e.g. Software, Hobbies, Freelance" };
+        var nameBox = new TextBox 
+        { 
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Categories_Dialog_NameHeader"), 
+            PlaceholderText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Categories_Dialog_NamePlaceholder") 
+        };
         var typeBox = new ComboBox
         {
-            Header = "Category Type",
+            Header = FinPulse.Windows.Services.LocalizationService.Current.GetString("Categories_Dialog_TypeHeader"),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             SelectedIndex = 0
         };
-        typeBox.Items.Add("Expense");
-        typeBox.Items.Add("Income");
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Expense"));
+        typeBox.Items.Add(FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Income"));
 
         var panel = new StackPanel { Spacing = 12, Width = 340 };
         panel.Children.Add(nameBox);
@@ -43,10 +47,10 @@ public sealed partial class CategoriesPage : Page
 
         var dialog = new ContentDialog
         {
-            Title = "Add Custom Category",
+            Title = FinPulse.Windows.Services.LocalizationService.Current.GetString("Categories_Dialog_AddTitle"),
             Content = panel,
-            PrimaryButtonText = "Save Category",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Categories_Dialog_SaveButton"),
+            CloseButtonText = FinPulse.Windows.Services.LocalizationService.Current.GetString("Common_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = XamlRoot
         };
