@@ -202,7 +202,12 @@
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="14">
                     <Grid>
-                        <TextBlock x:Uid="Settings_Sync_Title" Text="Firebase Cloud Sync" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                        <StackPanel Spacing="2">
+                            <TextBlock x:Uid="Settings_Sync_Title" Text="Cloud Sync" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                            <TextBlock x:Uid="Settings_Sync_Subtitle" Text="Two-way real-time reconciliation with FinPulse Android via Cloud Firestore"
+                                       FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
                         <Button HorizontalAlignment="Right" Command="{x:Bind ViewModel.SyncNowCommand}" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <FontIcon Glyph="&#xE72C;" FontSize="13" />
@@ -210,6 +215,62 @@
                             </StackPanel>
                         </Button>
                     </Grid>
+
+                    <!-- Google Account Display -->
+                    <Grid>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock x:Uid="Settings_Sync_AccountLabel" Text="Google Account" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock Text="{x:Bind ViewModel.ConnectedAccountEmail, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <Border HorizontalAlignment="Right" Background="{StaticResource FinPulseLightGreenBrush}" CornerRadius="4" Padding="8,2"
+                                Visibility="{x:Bind ViewModel.IsLoggedIn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock x:Uid="Settings_Sync_ConnectedBadge" Text="Connected" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource FinPulseDarkGreenBrush}" />
+                        </Border>
+                    </Grid>
+
+                    <MenuFlyoutSeparator />
+
+                    <!-- Automatic Cloud Sync Toggle -->
+                    <Grid>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock x:Uid="Settings_Sync_AutoSyncLabel" Text="Automatic Cloud Sync" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_Sync_AutoSyncDesc" Text="Periodically synchronize financial records while the application is active" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <ToggleSwitch HorizontalAlignment="Right" IsOn="{x:Bind ViewModel.IsAutoSyncEnabled, Mode=TwoWay}" />
+                    </Grid>
+
+                    <MenuFlyoutSeparator />
+
+                    <!-- Sync After App Launch Toggle -->
+                    <Grid>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock x:Uid="Settings_Sync_LaunchSyncLabel" Text="Sync After App Launch" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_Sync_LaunchSyncDesc" Text="Trigger background cloud synchronization immediately after starting FinPulse" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <ToggleSwitch HorizontalAlignment="Right" IsOn="{x:Bind ViewModel.IsSyncOnStartupEnabled, Mode=TwoWay}" />
+                    </Grid>
+
+                    <MenuFlyoutSeparator />
+
+                    <!-- Sync Interval ComboBox -->
+                    <Grid>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock x:Uid="Settings_Sync_IntervalLabel" Text="Sync Interval" FontWeight="SemiBold" FontSize="14" />
+                            <TextBlock x:Uid="Settings_Sync_IntervalDesc" Text="Frequency of automatic background synchronization" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <ComboBox HorizontalAlignment="Right" Width="160"
+                                  ItemsSource="{x:Bind ViewModel.AvailableSyncIntervals, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedSyncInterval, Mode=TwoWay}"
+                                  IsEnabled="{x:Bind ViewModel.IsAutoSyncEnabled, Mode=OneWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:SyncIntervalOption">
+                                    <TextBlock Text="{x:Bind DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+
+                    <MenuFlyoutSeparator />
 
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>

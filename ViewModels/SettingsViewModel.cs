@@ -15,9 +15,52 @@ public class SettingsViewModel : ViewModelBase
     private readonly ILocalDataStore _store;
     private readonly ISyncService _syncService;
     private readonly IAuthService _authService;
+    private readonly ICloudSyncCoordinator _syncCoordinator;
 
     public ObservableCollection<CurrencyMetadata> AvailableCurrencies { get; } = new();
     public ObservableCollection<LanguageOption> AvailableLanguages { get; } = new();
+    public ObservableCollection<SyncIntervalOption> AvailableSyncIntervals { get; } = new();
+
+    private SyncIntervalOption? _selectedSyncInterval;
+    public SyncIntervalOption? SelectedSyncInterval
+    {
+        get => _selectedSyncInterval;
+        set
+        {
+            if (SetProperty(ref _selectedSyncInterval, value) && value != null)
+            {
+                _ = _syncCoordinator.SetSyncIntervalMinutesAsync(value.Minutes);
+            }
+        }
+    }
+
+    public bool IsAutoSyncEnabled
+    {
+        get => _syncCoordinator.IsAutoSyncEnabled;
+        set
+        {
+            if (_syncCoordinator.IsAutoSyncEnabled != value)
+            {
+                _ = _syncCoordinator.SetAutoSyncEnabledAsync(value);
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool IsSyncOnStartupEnabled
+    {
+        get => _syncCoordinator.IsSyncOnStartupEnabled;
+        set
+        {
+            if (_syncCoordinator.IsSyncOnStartupEnabled != value)
+            {
+                _ = _syncCoordinator.SetSyncOnStartupEnabledAsync(value);
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string ConnectedAccountEmail => CurrentUser?.Email ?? LocalizationService.Current.GetString("Settings_NotSignedIn", "Not Signed In");
 
     private CurrencyMetadata? _selectedCurrency;
     public CurrencyMetadata? SelectedCurrency
@@ -114,23 +157,27 @@ public class SettingsViewModel : ViewModelBase
     public IAsyncRelayCommand ClearCloudCommand { get; }
     public IAsyncRelayCommand SignInGoogleCommand { get; }
 
-    public SettingsViewModel(ILocalDataStore store, ISyncService syncService, IAuthService authService)
+    public SettingsViewModel(ILocalDataStore store, ISyncService syncService, IAuthService authService, ICloudSyncCoordinator syncCoordinator)
     {
         _store = store;
         _syncService = syncService;
         _authService = authService;
+        _syncCoordinator = syncCoordinator;
 
         SyncNowCommand = new AsyncRelayCommand(PerformSyncAsync);
         SignOutCommand = new AsyncRelayCommand(SignOutAsync);
         ClearCloudCommand = new AsyncRelayCommand(ClearCloudDataAsync);
         SignInGoogleCommand = new AsyncRelayCommand(SignInGoogleAsync);
 
+        _syncCoordinator.StateChanged += (s, state) => UpdateSyncStatus();
         _syncService.SyncStatusChanged += (s, status) => UpdateSyncStatus();
         _authService.AuthStateChanged += (s, user) =>
         {
             CurrentUser = user;
             OnPropertyChanged(nameof(IsLoggedIn));
             OnPropertyChanged(nameof(IsNotLoggedIn));
+            OnPropertyChanged(nameof(ConnectedAccountEmail));
+            UpdateSyncStatus();
         };
     }
 
@@ -148,6 +195,18 @@ public class SettingsViewModel : ViewModelBase
             AvailableLanguages.Add(lang);
         }
 
+        AvailableSyncIntervals.Clear();
+        foreach (var opt in SyncIntervalOption.DefaultOptions)
+        {
+            AvailableSyncIntervals.Add(opt);
+        }
+        _selectedSyncInterval = AvailableSyncIntervals.FirstOrDefault(o => o.Minutes == _syncCoordinator.SyncIntervalMinutes)
+                                ?? AvailableSyncIntervals.FirstOrDefault(o => o.Minutes == 60);
+        OnPropertyChanged(nameof(SelectedSyncInterval));
+        OnPropertyChanged(nameof(IsAutoSyncEnabled));
+        OnPropertyChanged(nameof(IsSyncOnStartupEnabled));
+        OnPropertyChanged(nameof(ConnectedAccountEmail));
+
         var settings = await _store.GetSettingsAsync();
         SelectedCurrency = AvailableCurrencies.FirstOrDefault(c => c.Code == settings.BaseCurrencyCode) ?? AvailableCurrencies.FirstOrDefault(c => c.Code == "EUR");
         SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code.Equals(settings.SelectedLanguage, StringComparison.OrdinalIgnoreCase))
@@ -162,19 +221,37 @@ public class SettingsViewModel : ViewModelBase
     private void UpdateSyncStatus()
     {
         var loc = LocalizationService.Current;
-        SyncStatusText = _syncService.CurrentStatus switch
+        SyncStatusText = _syncCoordinator.State switch
         {
-            SyncStatus.SYNCING => loc.GetString("Sync_Status_Syncing"),
-            SyncStatus.SUCCESS => loc.GetString("Sync_Status_Synchronized"),
-            SyncStatus.ERROR => loc.Format("Sync_Status_Error", _syncService.LastErrorMessage ?? string.Empty),
-            _ => loc.GetString("Sync_Status_Idle")
+            GlobalSyncState.Syncing => loc.GetString("Sync_Status_Syncing", "Syncing..."),
+            GlobalSyncState.Success => loc.GetString("Sync_Status_Synchronized", "Synchronized"),
+            GlobalSyncState.Error => loc.Format("Sync_Status_Error", _syncCoordinator.LastError ?? string.Empty),
+            GlobalSyncState.Offline => loc.GetString("Sync_Status_Offline", "Offline"),
+            GlobalSyncState.AuthenticationRequired => loc.GetString("Sync_Status_AuthRequired", "Sign In Required"),
+            _ => loc.GetString("Sync_Status_Idle", "Idle")
         };
 
-        LastSyncText = _syncService.LastSyncTimestamp > 0
-            ? DateTimeOffset.FromUnixTimeMilliseconds(_syncService.LastSyncTimestamp).LocalDateTime.ToString("MMM dd, yyyy HH:mm:ss", CultureInfo.CurrentCulture)
-            : loc.GetString("Sync_LastSync_Never");
+        if (_syncCoordinator.LastSyncTimestamp > 0)
+        {
+            var syncDto = DateTimeOffset.FromUnixTimeMilliseconds(_syncCoordinator.LastSyncTimestamp).LocalDateTime;
+            if (syncDto.Date == DateTime.Today)
+            {
+                LastSyncText = $"Today, {syncDto:HH:mm}";
+            }
+            else
+            {
+                LastSyncText = syncDto.ToString("MMM dd, yyyy HH:mm", CultureInfo.CurrentCulture);
+            }
+        }
+        else
+        {
+            LastSyncText = loc.GetString("Sync_LastSync_Never", "Never");
+        }
 
-        PendingChanges = _syncService.PendingChangesCount;
+        PendingChanges = _syncCoordinator.PendingChangesCount;
+        OnPropertyChanged(nameof(IsAutoSyncEnabled));
+        OnPropertyChanged(nameof(IsSyncOnStartupEnabled));
+        OnPropertyChanged(nameof(ConnectedAccountEmail));
     }
 
     public async Task PerformSyncAsync()
@@ -184,7 +261,7 @@ public class SettingsViewModel : ViewModelBase
         BusyMessage = loc.GetString("Busy_Syncing");
         try
         {
-            var res = await _syncService.PerformFullSyncAsync();
+            var res = await _syncCoordinator.SyncAsync(SyncTrigger.Manual);
             UpdateSyncStatus();
         }
         finally

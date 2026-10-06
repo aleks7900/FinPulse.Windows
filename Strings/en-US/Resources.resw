@@ -859,6 +859,30 @@
     <value>Upcoming Payment Due</value>
   </data>
   <data name="Notification_BillDue_Body" xml:space="preserve">
-    <value>{0} ({1}) is scheduled for {2}.</value>
+    <value>Upcoming payment {0} ({1}) is scheduled for {2}.</value>
+  </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>Cloud sync completed</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>Cloud sync failed</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>No internet connection</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>Sign in with Google to enable cloud sync</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>Sign In Required</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>Sync</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>Cloud Sync</value>
   </data>
 </root>

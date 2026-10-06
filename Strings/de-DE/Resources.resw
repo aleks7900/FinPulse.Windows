@@ -859,6 +859,30 @@
     <value>Zahlung fällig</value>
   </data>
   <data name="Notification_BillDue_Body" xml:space="preserve">
-    <value>{0} ({1}) ist für den {2} geplant.</value>
+    <value>Anstehende Zahlung {0} ({1}) ist für {2} geplant.</value>
+  </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>Cloud-Synchronisation abgeschlossen</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>Cloud-Synchronisation fehlgeschlagen</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>Keine Internetverbindung</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>Mit Google anmelden, um Cloud-Sync zu aktivieren</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>Anmeldung erforderlich</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>Synchronisieren</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>Cloud-Sync</value>
   </data>
 </root>

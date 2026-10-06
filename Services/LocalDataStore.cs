@@ -24,6 +24,7 @@ public class LocalDataStore : ILocalDataStore
     private readonly ConcurrentDictionary<string, SyncQueueItem> _syncQueue = new();
     private readonly ConcurrentDictionary<string, LocalTombstone> _tombstones = new();
     private CloudSettings _settings = new();
+    private SyncPreferences _syncPreferences = new();
 
     public event EventHandler? DataChanged;
 
@@ -55,6 +56,7 @@ public class LocalDataStore : ILocalDataStore
             await LoadDictionaryAsync("goals.json", _goals);
             await LoadDictionaryAsync("sync_queue.json", _syncQueue);
             await LoadDictionaryAsync("tombstones.json", _tombstones);
+            await LoadFromFileAsync("sync_preferences.json", data => _syncPreferences = JsonSerializer.Deserialize<SyncPreferences>(data) ?? new SyncPreferences());
 
             // Populate default categories if empty
             if (_categories.IsEmpty)
@@ -689,6 +691,15 @@ public class LocalDataStore : ILocalDataStore
         {
             EnqueueSync("SETTINGS", CloudSettings.SettingsDocumentId, "UPSERT", settings.UpdatedAt);
         }
+        DataChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public Task<SyncPreferences> GetSyncPreferencesAsync() => Task.FromResult(_syncPreferences);
+
+    public async Task SaveSyncPreferencesAsync(SyncPreferences preferences)
+    {
+        _syncPreferences = preferences;
+        await SaveToFileAsync("sync_preferences.json", JsonSerializer.Serialize(preferences, new JsonSerializerOptions { WriteIndented = true }));
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
     #endregion

@@ -31,6 +31,7 @@ public partial class App : Application
         services.AddSingleton<IFirestoreClient, FirestoreRestClient>();
         services.AddSingleton<ILocalDataStore, LocalDataStore>();
         services.AddSingleton<ISyncService, CloudSyncService>();
+        services.AddSingleton<ICloudSyncCoordinator, CloudSyncCoordinator>();
         services.AddSingleton<INotificationService, WindowsNotificationService>();
 
         // Repositories
@@ -92,15 +93,13 @@ public partial class App : Application
         {
             var authService = Services.GetRequiredService<IAuthService>();
             var localStore = Services.GetRequiredService<ILocalDataStore>();
-            var syncService = Services.GetRequiredService<ISyncService>();
+            var syncCoordinator = Services.GetRequiredService<ICloudSyncCoordinator>();
 
             await authService.InitializeAsync();
             await localStore.InitializeAsync();
+            await syncCoordinator.InitializeAsync();
 
-            if (authService.IsLoggedIn)
-            {
-                _ = syncService.PerformFullSyncAsync();
-            }
+            syncCoordinator.TriggerStartupSync();
         }
         catch (Exception ex)
         {

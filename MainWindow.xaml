@@ -39,6 +39,41 @@
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="Assets/FinPulseIcon.png" />
             </TitleBar.IconSource>
+
+            <TitleBar.Content>
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,140,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6" VerticalAlignment="Center">
+                        <Button x:Name="GlobalSyncButton"
+                                Command="{x:Bind ViewModel.TriggerGlobalSyncCommand}"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.GlobalSyncTooltip, Mode=OneWay}"
+                                Height="32" Padding="8,2" CornerRadius="6"
+                                Background="Transparent" BorderBrush="Transparent"
+                                IsEnabled="{x:Bind ViewModel.CanTriggerSync, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <ProgressRing IsActive="{x:Bind ViewModel.IsSyncing, Mode=OneWay}"
+                                              Visibility="{x:Bind ViewModel.SyncProgressVisibility, Mode=OneWay}"
+                                              Width="14" Height="14" />
+                                <FontIcon Glyph="{x:Bind ViewModel.GlobalSyncIconGlyph, Mode=OneWay}"
+                                          Foreground="{x:Bind ViewModel.GlobalSyncIconBrush, Mode=OneWay}"
+                                          FontSize="13"
+                                          Visibility="{x:Bind ViewModel.SyncIconVisibility, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind ViewModel.GlobalSyncStatusLabel, Mode=OneWay}"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Foreground="{x:Bind ViewModel.GlobalSyncLabelBrush, Mode=OneWay}" />
+                            </StackPanel>
+                        </Button>
+
+                        <TeachingTip x:Name="GlobalSyncTeachingTip"
+                                     Target="{x:Bind GlobalSyncButton}"
+                                     PreferredPlacement="BottomRight"
+                                     IsLightDismissEnabled="True"
+                                     IsOpen="{x:Bind ViewModel.IsFeedbackTipOpen, Mode=OneWay}"
+                                     Title="{x:Bind ViewModel.FeedbackTipTitle, Mode=OneWay}"
+                                     Subtitle="{x:Bind ViewModel.FeedbackTipSubtitle, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
+            </TitleBar.Content>
         </TitleBar>
 
         <!-- Main Shell NavigationView -->

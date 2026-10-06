@@ -859,6 +859,30 @@
     <value>即将到期付款提醒</value>
   </data>
   <data name="Notification_BillDue_Body" xml:space="preserve">
-    <value>“{0}”（{1}）定于 {2} 执行扣款。</value>
+    <value>即将到期的付款 {0} ({1}) 计划于 {2} 执行。</value>
+  </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>云同步完成</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>云同步失败</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>无网络连接</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>登录 Google 账号以启用云同步</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>离线</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>需要登录</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>同步</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>云同步</value>
   </data>
 </root>

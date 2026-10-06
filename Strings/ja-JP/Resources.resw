@@ -859,6 +859,30 @@
     <value>支払期日のお知らせ</value>
   </data>
   <data name="Notification_BillDue_Body" xml:space="preserve">
-    <value>「{0}」（{1}）の支払いは {2} に予定されています。</value>
+    <value>予定されている支払い {0} ({1}) は {2} に予定されています。</value>
+  </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>クラウド同期が完了しました</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>クラウド同期に失敗しました</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>インターネット接続がありません</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>クラウド同期を有効にするには Google でログインしてください</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>オフライン</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>ログインが必要です</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>同期</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>クラウド同期</value>
   </data>
 </root>

@@ -859,6 +859,30 @@
     <value>Pagamento imminente in scadenza</value>
   </data>
   <data name="Notification_BillDue_Body" xml:space="preserve">
-    <value>{0} ({1}) è programmato per il {2}.</value>
+    <value>Il pagamento imminente {0} ({1}) è programmato per {2}.</value>
+  </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>Sincronizzazione cloud completata</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>Sincronizzazione cloud non riuscita</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>Nessuna connessione Internet</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>Accedi con Google per abilitare la sincronizzazione</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>Non in linea</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>Accesso richiesto</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>Sincronizza</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>Sincronizzazione Cloud</value>
   </data>
 </root>

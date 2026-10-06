@@ -23,7 +23,6 @@ public class CloudSyncService : ISyncService, IDisposable
     private readonly SemaphoreSlim _syncLock = new(1, 1);
 
     private readonly Timer _debounceTimer;
-    private readonly Timer _periodicTimer;
     private bool _isDisposed;
 
     public SyncStatus CurrentStatus { get; private set; } = SyncStatus.SIGNED_OUT;
@@ -69,9 +68,6 @@ public class CloudSyncService : ISyncService, IDisposable
 
         // Debounce timer for coalescing rapid local modifications (2.5 seconds)
         _debounceTimer = new Timer(OnDebounceTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
-
-        // Periodic background sync timer (every 10 minutes)
-        _periodicTimer = new Timer(OnPeriodicTimerElapsed, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
 
         // Listen for local changes to track pending count and trigger debounced sync
         _localStore.DataChanged += OnLocalDataChanged;
@@ -152,14 +148,6 @@ public class CloudSyncService : ISyncService, IDisposable
     private void OnDebounceTimerElapsed(object? state)
     {
         if (_authService.IsLoggedIn && IsNetworkAvailable())
-        {
-            _ = PerformFullSyncAsync();
-        }
-    }
-
-    private void OnPeriodicTimerElapsed(object? state)
-    {
-        if (_authService.IsLoggedIn && IsNetworkAvailable() && CurrentStatus != SyncStatus.SYNCING)
         {
             _ = PerformFullSyncAsync();
         }
@@ -710,7 +698,6 @@ public class CloudSyncService : ISyncService, IDisposable
         _isDisposed = true;
 
         _debounceTimer.Dispose();
-        _periodicTimer.Dispose();
         _syncLock.Dispose();
 
         _localStore.DataChanged -= OnLocalDataChanged;

@@ -861,4 +861,28 @@
   <data name="Notification_BillDue_Body" xml:space="preserve">
     <value>Платеж {0} ({1}) запланирован на {2}.</value>
   </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>Синхронизация с облаком завершена</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>Сбой синхронизации с облаком</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>Нет подключения к интернету</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>Войдите через Google, чтобы включить синхронизацию</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>Офлайн</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>Требуется вход</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>Синхронизировать</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>Облачная синхронизация</value>
+  </data>
 </root>

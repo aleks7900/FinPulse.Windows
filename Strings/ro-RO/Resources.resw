@@ -859,6 +859,30 @@
     <value>Plată viitoare scadentă</value>
   </data>
   <data name="Notification_BillDue_Body" xml:space="preserve">
-    <value>{0} ({1}) este programat pentru {2}.</value>
+    <value>Plata viitoare {0} ({1}) este programată pentru {2}.</value>
+  </data>
+  <data name="Sync_Feedback_Success" xml:space="preserve">
+    <value>Sincronizarea în cloud a fost finalizată</value>
+  </data>
+  <data name="Sync_Feedback_Failed" xml:space="preserve">
+    <value>Sincronizarea în cloud a eșuat</value>
+  </data>
+  <data name="Sync_Feedback_Offline" xml:space="preserve">
+    <value>Fără conexiune la internet</value>
+  </data>
+  <data name="Sync_Feedback_AuthRequired" xml:space="preserve">
+    <value>Conectați-vă cu Google pentru a activa sincronizarea</value>
+  </data>
+  <data name="Sync_Status_Offline" xml:space="preserve">
+    <value>Deconectat</value>
+  </data>
+  <data name="Sync_Status_AuthRequired" xml:space="preserve">
+    <value>Autentificare necesară</value>
+  </data>
+  <data name="Action_Cloud_Sync" xml:space="preserve">
+    <value>Sincronizare</value>
+  </data>
+  <data name="Shell_Sync_Title" xml:space="preserve">
+    <value>Sincronizare Cloud</value>
   </data>
 </root>

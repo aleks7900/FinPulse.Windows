@@ -63,6 +63,8 @@ public interface ILocalDataStore
     // Settings
     Task<CloudSettings> GetSettingsAsync();
     Task SaveSettingsAsync(CloudSettings settings, bool markForSync = true);
+    Task<SyncPreferences> GetSyncPreferencesAsync();
+    Task SaveSyncPreferencesAsync(SyncPreferences preferences);
 
     // Metadata & Tombstones
     Task<long?> GetEntityUpdatedAtAsync(string entityType, string id);

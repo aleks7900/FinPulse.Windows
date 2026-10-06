@@ -14,13 +14,12 @@ namespace FinPulse.Windows;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly ShellViewModel _viewModel;
+    public ShellViewModel ViewModel { get; }
 
     public MainWindow(string? initialTag = null)
     {
+        ViewModel = App.Services.GetRequiredService<ShellViewModel>();
         InitializeComponent();
-
-        _viewModel = App.Services.GetRequiredService<ShellViewModel>();
 
         var loc = App.Services.GetService<ILocalizationService>() ?? LocalizationService.Current;
         Title = loc.GetString("App_Title", "FinPulse Companion");
@@ -33,9 +32,21 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(1240, 820));
 
         Activated += MainWindow_Activated;
+        Closed += MainWindow_Closed;
 
         // Initial navigation
         NavigateToTag(!string.IsNullOrWhiteSpace(initialTag) ? initialTag : "overview");
+    }
+
+    private void MainWindow_Closed(object sender, WindowEventArgs args)
+    {
+        try
+        {
+            (App.Services.GetService<ICloudSyncCoordinator>() as IDisposable)?.Dispose();
+            (App.Services.GetService<ISyncService>() as IDisposable)?.Dispose();
+            (App.Services.GetService<ILocalDataStore>() as IDisposable)?.Dispose();
+        }
+        catch { }
     }
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -44,16 +55,8 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                var sync = App.Services.GetService<ISyncService>();
-                var auth = App.Services.GetService<IAuthService>();
-                if (sync != null && auth != null && auth.IsLoggedIn)
-                {
-                    long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    if (now - sync.LastSyncTimestamp > 45000 || sync.PendingChangesCount > 0)
-                    {
-                        _ = sync.PerformFullSyncAsync();
-                    }
-                }
+                var coordinator = App.Services.GetService<ICloudSyncCoordinator>();
+                coordinator?.TriggerForegroundSync();
             }
             catch { }
         }
@@ -141,8 +144,8 @@ public sealed partial class MainWindow : Window
     private async void Refresh_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
         args.Handled = true;
-        var sync = App.Services.GetRequiredService<ISyncService>();
-        await sync.PerformFullSyncAsync();
+        var coordinator = App.Services.GetRequiredService<ICloudSyncCoordinator>();
+        await coordinator.SyncAsync(SyncTrigger.Manual);
     }
 
     private void Settings_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
