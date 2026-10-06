@@ -762,6 +762,33 @@
   <data name="Settings_BaseCurrency_Desc.Text" xml:space="preserve">
     <value>자산 합산 및 새 계좌 생성 시 기본 통화</value>
   </data>
+  <data name="Settings_Sync_Subtitle.Text" xml:space="preserve">
+    <value>Cloud Firestore를 통한 FinPulse Android와의 양방향 실시간 동기화</value>
+  </data>
+  <data name="Settings_Sync_AccountLabel.Text" xml:space="preserve">
+    <value>Google 계정</value>
+  </data>
+  <data name="Settings_Sync_ConnectedBadge.Text" xml:space="preserve">
+    <value>연결됨</value>
+  </data>
+  <data name="Settings_Sync_AutoSyncLabel.Text" xml:space="preserve">
+    <value>자동 클라우드 동기화</value>
+  </data>
+  <data name="Settings_Sync_AutoSyncDesc.Text" xml:space="preserve">
+    <value>애플리케이션이 활성화된 동안 재무 기록을 주기적으로 동기화</value>
+  </data>
+  <data name="Settings_Sync_LaunchSyncLabel.Text" xml:space="preserve">
+    <value>앱 실행 후 동기화</value>
+  </data>
+  <data name="Settings_Sync_LaunchSyncDesc.Text" xml:space="preserve">
+    <value>FinPulse 시작 직후 백그라운드 클라우드 동기화 시작</value>
+  </data>
+  <data name="Settings_Sync_IntervalLabel.Text" xml:space="preserve">
+    <value>동기화 간격</value>
+  </data>
+  <data name="Settings_Sync_IntervalDesc.Text" xml:space="preserve">
+    <value>자동 백그라운드 동기화 빈도</value>
+  </data>
   <data name="Settings_Sync_Title.Text" xml:space="preserve">
     <value>Firebase 클라우드 동기화</value>
   </data>

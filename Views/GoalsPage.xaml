@@ -1,7 +1,8 @@
-<Page
+﻿<Page
     x:Class="FinPulse.Windows.Views.GoalsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:FinPulse.Windows.Services"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:FinPulse.Windows.Models"
@@ -14,14 +15,14 @@
             <!-- Header -->
             <Grid>
                 <StackPanel Spacing="4">
-                    <TextBlock x:Uid="Goals_HeaderTitle" Text="Financial Savings Goals" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                    <TextBlock x:Uid="Goals_HeaderSubtitle" Text="Set milestone targets, calculate monthly contributions, and deposit funds" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Goals_HeaderTitle" services:Loc.Uid="Goals_HeaderTitle" Text="Financial Savings Goals" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Goals_HeaderSubtitle" services:Loc.Uid="Goals_HeaderSubtitle" Text="Set milestone targets, calculate monthly contributions, and deposit funds" Style="{StaticResource PageSubtitleTextBlockStyle}" />
                 </StackPanel>
 
                 <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="AddGoalButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE710;" FontSize="14" />
-                        <TextBlock x:Uid="Goals_NewGoalButton" Text="New Goal" FontWeight="SemiBold" />
+                        <TextBlock x:Uid="Goals_NewGoalButton" services:Loc.Uid="Goals_NewGoalButton" Text="New Goal" FontWeight="SemiBold" />
                     </StackPanel>
                 </Button>
             </Grid>
@@ -63,7 +64,7 @@
                                         <TextBlock Text="{x:Bind ProgressPercentString}" FontWeight="Bold" FontSize="12" Foreground="{StaticResource FinPulsePrimaryBrush}" />
                                         <TextBlock HorizontalAlignment="Right" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                             <Run Text="{x:Bind FormattedRemainingAmount}" FontWeight="SemiBold" />
-                                            <Run x:Uid="Goals_RemainingToTarget" Text=" remaining to target" />
+                                            <Run x:Uid="Goals_RemainingToTarget" services:Loc.Uid="Goals_RemainingToTarget" Text=" remaining to target" />
                                         </TextBlock>
                                     </Grid>
                                 </StackPanel>
@@ -71,9 +72,9 @@
                                 <!-- Suggested Contribution Card -->
                                 <Border Grid.Column="1" Style="{StaticResource StatCardBorder}" VerticalAlignment="Center">
                                     <StackPanel Spacing="2">
-                                        <TextBlock x:Uid="Goals_SuggestedContribution_Label" Text="SUGGESTED CONTRIBUTION" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Goals_SuggestedContribution_Label" services:Loc.Uid="Goals_SuggestedContribution_Label" Text="SUGGESTED CONTRIBUTION" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind FormattedSuggestedMonthlyContribution, Mode=OneTime}" FontSize="16" FontWeight="Bold" Foreground="{StaticResource FinPulseAccentBrush}" />
-                                        <TextBlock x:Uid="Goals_PerMonth_Label" Text="Per Month to Reach Deadline" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        <TextBlock x:Uid="Goals_PerMonth_Label" services:Loc.Uid="Goals_PerMonth_Label" Text="Per Month to Reach Deadline" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
@@ -82,7 +83,7 @@
                                     <Button Click="DepositButton_Click" Tag="{x:Bind Id}" Style="{StaticResource AccentButtonStyle}">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon Glyph="&#xE8C7;" FontSize="12" />
-                                            <TextBlock x:Uid="Goals_DepositButton" Text="Deposit" />
+                                            <TextBlock x:Uid="Goals_DepositButton" services:Loc.Uid="Goals_DepositButton" Text="Deposit" />
                                         </StackPanel>
                                     </Button>
                                     <Button Click="DeleteGoal_Click" Tag="{x:Bind Id}" Background="Transparent" BorderThickness="0">

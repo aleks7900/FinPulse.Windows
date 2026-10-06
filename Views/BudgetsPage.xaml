@@ -1,7 +1,8 @@
-<Page
+﻿<Page
     x:Class="FinPulse.Windows.Views.BudgetsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:FinPulse.Windows.Services"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:FinPulse.Windows.Models"
@@ -14,14 +15,14 @@
             <!-- Page Header -->
             <Grid>
                 <StackPanel Spacing="4">
-                    <TextBlock x:Uid="Budgets_HeaderTitle" Text="Budget Management" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                    <TextBlock x:Uid="Budgets_HeaderSubtitle" Text="Track category spending limits and monitor pacing progress" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Budgets_HeaderTitle" services:Loc.Uid="Budgets_HeaderTitle" Text="Budget Management" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Budgets_HeaderSubtitle" services:Loc.Uid="Budgets_HeaderSubtitle" Text="Track category spending limits and monitor pacing progress" Style="{StaticResource PageSubtitleTextBlockStyle}" />
                 </StackPanel>
 
                 <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="AddBudgetButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE710;" FontSize="14" />
-                        <TextBlock x:Uid="Budgets_NewBudgetButton" Text="New Budget" FontWeight="SemiBold" />
+                        <TextBlock x:Uid="Budgets_NewBudgetButton" services:Loc.Uid="Budgets_NewBudgetButton" Text="New Budget" FontWeight="SemiBold" />
                     </StackPanel>
                 </Button>
             </Grid>
@@ -36,21 +37,21 @@
 
                 <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Uid="Budgets_TotalLimit_Label" Text="TOTAL BUDGET LIMIT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Budgets_TotalLimit_Label" services:Loc.Uid="Budgets_TotalLimit_Label" Text="TOTAL BUDGET LIMIT" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.TotalBudgetLimitString, Mode=OneWay}" FontSize="24" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Uid="Budgets_TotalSpent_Label" Text="TOTAL SPENT MTD" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Budgets_TotalSpent_Label" services:Loc.Uid="Budgets_TotalSpent_Label" Text="TOTAL SPENT MTD" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.TotalBudgetSpentString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseNegativeBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="2" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Uid="Budgets_Remaining_Label" Text="REMAINING BUFFER" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Budgets_Remaining_Label" services:Loc.Uid="Budgets_Remaining_Label" Text="REMAINING BUFFER" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.TotalBudgetRemainingString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulsePrimaryBrush}" />
                     </StackPanel>
                 </Border>
@@ -59,7 +60,7 @@
             <!-- Budgets Grid / List -->
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="16">
-                    <TextBlock x:Uid="Budgets_ActiveBudgets_Title" Text="Active Budgets" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Budgets_ActiveBudgets_Title" services:Loc.Uid="Budgets_ActiveBudgets_Title" Text="Active Budgets" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Budgets, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
@@ -98,7 +99,7 @@
 
                                             <TextBlock HorizontalAlignment="Right" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                                 <Run Text="{x:Bind FormattedRemaining}" FontWeight="SemiBold" />
-                                                <Run x:Uid="Budgets_RemainingSuffix" Text=" remaining" />
+                                                <Run x:Uid="Budgets_RemainingSuffix" services:Loc.Uid="Budgets_RemainingSuffix" Text=" remaining" />
                                             </TextBlock>
                                         </Grid>
                                     </StackPanel>

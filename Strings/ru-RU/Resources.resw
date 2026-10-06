@@ -762,6 +762,33 @@
   <data name="Settings_BaseCurrency_Desc.Text" xml:space="preserve">
     <value>Валюта по умолчанию для сводных балансов и новых счетов</value>
   </data>
+  <data name="Settings_Sync_Subtitle.Text" xml:space="preserve">
+    <value>Двусторонняя синхронизация в реальном времени с FinPulse Android через Cloud Firestore</value>
+  </data>
+  <data name="Settings_Sync_AccountLabel.Text" xml:space="preserve">
+    <value>Аккаунт Google</value>
+  </data>
+  <data name="Settings_Sync_ConnectedBadge.Text" xml:space="preserve">
+    <value>Подключено</value>
+  </data>
+  <data name="Settings_Sync_AutoSyncLabel.Text" xml:space="preserve">
+    <value>Автоматическая синхронизация</value>
+  </data>
+  <data name="Settings_Sync_AutoSyncDesc.Text" xml:space="preserve">
+    <value>Периодически синхронизировать финансовые записи при активном приложении</value>
+  </data>
+  <data name="Settings_Sync_LaunchSyncLabel.Text" xml:space="preserve">
+    <value>Синхронизация при запуске</value>
+  </data>
+  <data name="Settings_Sync_LaunchSyncDesc.Text" xml:space="preserve">
+    <value>Запускать фоновую облачную синхронизацию сразу после старта FinPulse</value>
+  </data>
+  <data name="Settings_Sync_IntervalLabel.Text" xml:space="preserve">
+    <value>Интервал синхронизации</value>
+  </data>
+  <data name="Settings_Sync_IntervalDesc.Text" xml:space="preserve">
+    <value>Частота автоматической фоновой синхронизации</value>
+  </data>
   <data name="Settings_Sync_Title.Text" xml:space="preserve">
     <value>Облачная синхронизация Firebase</value>
   </data>

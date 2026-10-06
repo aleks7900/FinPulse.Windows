@@ -1,7 +1,8 @@
-<Page
+﻿<Page
     x:Class="FinPulse.Windows.Views.AccountsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:FinPulse.Windows.Services"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:FinPulse.Windows.Models"
@@ -17,21 +18,21 @@
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <StackPanel Spacing="4">
-                <TextBlock x:Uid="Accounts_HeaderTitle" Text="Accounts Portfolio" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                <TextBlock x:Uid="Accounts_HeaderSubtitle" Text="Manage bank accounts, cards, and liquid funds" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="Accounts_HeaderTitle" services:Loc.Uid="Accounts_HeaderTitle" Text="Accounts Portfolio" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                <TextBlock x:Uid="Accounts_HeaderSubtitle" services:Loc.Uid="Accounts_HeaderSubtitle" Text="Manage bank accounts, cards, and liquid funds" Style="{StaticResource PageSubtitleTextBlockStyle}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Click="TransferButton_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE8D4;" FontSize="14" />
-                        <TextBlock x:Uid="Accounts_TransferButton" Text="Transfer Funds" />
+                        <TextBlock x:Uid="Accounts_TransferButton" services:Loc.Uid="Accounts_TransferButton" Text="Transfer Funds" />
                     </StackPanel>
                 </Button>
                 <Button Click="AddAccountButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE710;" FontSize="14" />
-                        <TextBlock x:Uid="Accounts_AddAccountButton" Text="Add Account" FontWeight="SemiBold" />
+                        <TextBlock x:Uid="Accounts_AddAccountButton" services:Loc.Uid="Accounts_AddAccountButton" Text="Add Account" FontWeight="SemiBold" />
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -82,7 +83,7 @@
                     <StackPanel Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}"
                                 HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
                         <FontIcon Glyph="&#xE8C7;" FontSize="40" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                        <TextBlock x:Uid="Accounts_EmptyState" Text="Select an account to view details" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Accounts_EmptyState" services:Loc.Uid="Accounts_EmptyState" Text="Select an account to view details" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
 
                     <!-- Account Details Content -->
@@ -113,21 +114,21 @@
 
                                 <Border Grid.Column="0" Style="{StaticResource StatCardBorder}">
                                     <StackPanel Spacing="4">
-                                        <TextBlock x:Uid="Accounts_CurrentBalance_Label" Text="CURRENT BALANCE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Accounts_CurrentBalance_Label" services:Loc.Uid="Accounts_CurrentBalance_Label" Text="CURRENT BALANCE" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind ViewModel.SelectedAccountFormattedBalance, Mode=OneWay}" FontSize="20" FontWeight="Bold" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Grid.Column="1" Style="{StaticResource StatCardBorder}">
                                     <StackPanel Spacing="4">
-                                        <TextBlock x:Uid="Accounts_TotalInflow_Label" Text="TOTAL INFLOW" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Accounts_TotalInflow_Label" services:Loc.Uid="Accounts_TotalInflow_Label" Text="TOTAL INFLOW" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind ViewModel.SelectedAccountIncomeString, Mode=OneWay}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource FinPulsePrimaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Grid.Column="2" Style="{StaticResource StatCardBorder}">
                                     <StackPanel Spacing="4">
-                                        <TextBlock x:Uid="Accounts_TotalOutflow_Label" Text="TOTAL OUTFLOW" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Accounts_TotalOutflow_Label" services:Loc.Uid="Accounts_TotalOutflow_Label" Text="TOTAL OUTFLOW" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{x:Bind ViewModel.SelectedAccountExpenseString, Mode=OneWay}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource FinPulseNegativeBrush}" />
                                     </StackPanel>
                                 </Border>
@@ -135,7 +136,7 @@
 
                             <!-- Account Transactions Ledger -->
                             <StackPanel Spacing="10">
-                                <TextBlock x:Uid="Accounts_History_Title" Text="Account Transaction History" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                                <TextBlock x:Uid="Accounts_History_Title" services:Loc.Uid="Accounts_History_Title" Text="Account Transaction History" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                                 <ListView ItemsSource="{x:Bind ViewModel.SelectedAccountTransactions, Mode=OneWay}" SelectionMode="None">
                                     <ListView.ItemTemplate>

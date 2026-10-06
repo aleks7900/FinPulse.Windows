@@ -79,6 +79,12 @@ public class OverviewViewModel : ViewModelBase
 
         RefreshCommand = new AsyncRelayCommand(LoadDataAsync);
         _store.DataChanged += (s, e) => _ = LoadDataAsync();
+        LocalizationService.Current.LanguageChanged += (s, e) =>
+        {
+            CurrentMonthYear = DateTime.Now.ToString("MMMM yyyy", System.Globalization.CultureInfo.CurrentCulture);
+            OnPropertyChanged(nameof(RefreshTooltip));
+            _ = LoadDataAsync();
+        };
     }
 
     public async Task LoadDataAsync()

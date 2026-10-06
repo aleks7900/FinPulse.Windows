@@ -762,6 +762,33 @@
   <data name="Settings_BaseCurrency_Desc.Text" xml:space="preserve">
     <value>Standardwährung für zusammengefasste Salden und neue Konten</value>
   </data>
+  <data name="Settings_Sync_Subtitle.Text" xml:space="preserve">
+    <value>Bidirektionaler Echtzeitabgleich mit FinPulse Android über Cloud Firestore</value>
+  </data>
+  <data name="Settings_Sync_AccountLabel.Text" xml:space="preserve">
+    <value>Google-Konto</value>
+  </data>
+  <data name="Settings_Sync_ConnectedBadge.Text" xml:space="preserve">
+    <value>Verbunden</value>
+  </data>
+  <data name="Settings_Sync_AutoSyncLabel.Text" xml:space="preserve">
+    <value>Automatische Cloud-Synchronisation</value>
+  </data>
+  <data name="Settings_Sync_AutoSyncDesc.Text" xml:space="preserve">
+    <value>Finanzdaten periodisch synchronisieren, während die Anwendung aktiv ist</value>
+  </data>
+  <data name="Settings_Sync_LaunchSyncLabel.Text" xml:space="preserve">
+    <value>Nach dem App-Start synchronisieren</value>
+  </data>
+  <data name="Settings_Sync_LaunchSyncDesc.Text" xml:space="preserve">
+    <value>Hintergrund-Cloud-Synchronisation sofort nach dem Start von FinPulse auslösen</value>
+  </data>
+  <data name="Settings_Sync_IntervalLabel.Text" xml:space="preserve">
+    <value>Synchronisationsintervall</value>
+  </data>
+  <data name="Settings_Sync_IntervalDesc.Text" xml:space="preserve">
+    <value>Häufigkeit der automatischen Hintergrund-Synchronisation</value>
+  </data>
   <data name="Settings_Sync_Title.Text" xml:space="preserve">
     <value>Firebase Cloud-Synchronisation</value>
   </data>

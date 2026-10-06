@@ -112,4 +112,10 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'StoreRelease'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug' and '$(Configuration)' != 'StoreRelease'">True</PublishTrimmed>
   </PropertyGroup>
+
+  <!-- Ensure resources.pri is available for unpackaged MRT Core lookups -->
+  <Target Name="CopyPriToResourcesPri" AfterTargets="Build;Publish">
+    <Copy SourceFiles="$(TargetDir)FinPulse.Windows.pri" DestinationFiles="$(TargetDir)resources.pri" Condition="Exists('$(TargetDir)FinPulse.Windows.pri')" ContinueOnError="true" />
+    <Copy SourceFiles="$(PublishDir)FinPulse.Windows.pri" DestinationFiles="$(PublishDir)resources.pri" Condition="Exists('$(PublishDir)FinPulse.Windows.pri')" ContinueOnError="true" />
+  </Target>
 </Project>

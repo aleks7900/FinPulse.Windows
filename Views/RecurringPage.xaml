@@ -1,7 +1,8 @@
-<Page
+﻿<Page
     x:Class="FinPulse.Windows.Views.RecurringPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:services="using:FinPulse.Windows.Services"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:FinPulse.Windows.Models"
@@ -14,14 +15,14 @@
             <!-- Page Header -->
             <Grid>
                 <StackPanel Spacing="4">
-                    <TextBlock x:Uid="Recurring_HeaderTitle" Text="Recurring Payments &amp; Subscriptions" Style="{StaticResource PageHeaderTextBlockStyle}" />
-                    <TextBlock x:Uid="Recurring_HeaderSubtitle" Text="Manage upcoming obligations, calculate monthly costs, and record payments" Style="{StaticResource PageSubtitleTextBlockStyle}" />
+                    <TextBlock x:Uid="Recurring_HeaderTitle" services:Loc.Uid="Recurring_HeaderTitle" Text="Recurring Payments &amp; Subscriptions" Style="{StaticResource PageHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Recurring_HeaderSubtitle" services:Loc.Uid="Recurring_HeaderSubtitle" Text="Manage upcoming obligations, calculate monthly costs, and record payments" Style="{StaticResource PageSubtitleTextBlockStyle}" />
                 </StackPanel>
 
                 <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="AddRuleButton_Click" Style="{StaticResource FinPulsePrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE710;" FontSize="14" />
-                        <TextBlock x:Uid="Recurring_AddButton" Text="Add Recurring" FontWeight="SemiBold" />
+                        <TextBlock x:Uid="Recurring_AddButton" services:Loc.Uid="Recurring_AddButton" Text="Add Recurring" FontWeight="SemiBold" />
                     </StackPanel>
                 </Button>
             </Grid>
@@ -35,17 +36,17 @@
 
                 <Border Grid.Column="0" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Uid="Recurring_MonthlyBurden_Label" Text="MONTHLY OBLIGATION BURDEN" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Recurring_MonthlyBurden_Label" services:Loc.Uid="Recurring_MonthlyBurden_Label" Text="MONTHLY OBLIGATION BURDEN" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.TotalMonthlyBurdenString, Mode=OneWay}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource FinPulseNegativeBrush}" />
-                        <TextBlock x:Uid="Recurring_MonthlyBurden_Desc" Text="Combined monthly projected cost of active subscriptions" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock x:Uid="Recurring_MonthlyBurden_Desc" services:Loc.Uid="Recurring_MonthlyBurden_Desc" Text="Combined monthly projected cost of active subscriptions" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="1" Style="{StaticResource FluentCardBorder}">
                     <StackPanel Spacing="4">
-                        <TextBlock x:Uid="Recurring_AnnualBurden_Label" Text="ANNUALIZED OBLIGATION BURDEN" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Recurring_AnnualBurden_Label" services:Loc.Uid="Recurring_AnnualBurden_Label" Text="ANNUALIZED OBLIGATION BURDEN" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind ViewModel.TotalAnnualBurdenString, Mode=OneWay}" FontSize="24" FontWeight="Bold" />
-                        <TextBlock x:Uid="Recurring_AnnualBurden_Desc" Text="Total 12-month projected subscription expenses" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock x:Uid="Recurring_AnnualBurden_Desc" services:Loc.Uid="Recurring_AnnualBurden_Desc" Text="Total 12-month projected subscription expenses" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -53,7 +54,7 @@
             <!-- Upcoming Recurring Rules List -->
             <Border Style="{StaticResource FluentCardBorder}">
                 <StackPanel Spacing="16">
-                    <TextBlock x:Uid="Recurring_UpcomingSchedule_Title" Text="Upcoming Schedule" Style="{StaticResource SectionHeaderTextBlockStyle}" />
+                    <TextBlock x:Uid="Recurring_UpcomingSchedule_Title" services:Loc.Uid="Recurring_UpcomingSchedule_Title" Text="Upcoming Schedule" Style="{StaticResource SectionHeaderTextBlockStyle}" />
 
                     <ItemsControl ItemsSource="{x:Bind ViewModel.RecurringRules, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
@@ -88,7 +89,7 @@
 
                                         <!-- Due Date -->
                                         <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
-                                            <TextBlock x:Uid="Recurring_NextDueDate_Label" Text="Next Due Date" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                            <TextBlock x:Uid="Recurring_NextDueDate_Label" services:Loc.Uid="Recurring_NextDueDate_Label" Text="Next Due Date" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                             <TextBlock Text="{x:Bind FormattedNextDue}" FontWeight="SemiBold" FontSize="13" />
                                         </StackPanel>
 
@@ -101,7 +102,7 @@
                                             <Button Click="MarkPaidButton_Click" Tag="{x:Bind Id}" Style="{StaticResource AccentButtonStyle}">
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                                     <FontIcon Glyph="&#xE73E;" FontSize="12" />
-                                                    <TextBlock x:Uid="Recurring_MarkPaidButton" Text="Mark Paid" />
+                                                    <TextBlock x:Uid="Recurring_MarkPaidButton" services:Loc.Uid="Recurring_MarkPaidButton" Text="Mark Paid" />
                                                 </StackPanel>
                                             </Button>
                                             <Button Click="DeleteRuleButton_Click" Tag="{x:Bind Id}" Background="Transparent" BorderThickness="0" Padding="4">

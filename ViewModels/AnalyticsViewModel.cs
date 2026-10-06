@@ -142,6 +142,7 @@ public class AnalyticsViewModel : ViewModelBase
 
         LoadAnalyticsCommand = new AsyncRelayCommand(LoadAnalyticsAsync);
         _store.DataChanged += (s, e) => _ = LoadAnalyticsAsync();
+        LocalizationService.Current.LanguageChanged += (s, e) => _ = LoadAnalyticsAsync();
     }
 
     public async Task LoadAnalyticsAsync()
