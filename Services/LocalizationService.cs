@@ -27,7 +27,7 @@ public class LocalizationService : ILocalizationService
     private static readonly string[] KnownLanguageCodes =
     [
         "en-US", "de-DE", "fr-FR", "es-ES", "it-IT", "pt-PT",
-        "pl-PL", "ro-RO", "uk-UA", "zh-CN", "ja-JP", "ko-KR"
+        "pl-PL", "ro-RO", "uk-UA", "zh-CN", "ja-JP", "ko-KR", "ru-RU"
     ];
 
     public IReadOnlyList<LanguageOption> SupportedLanguages
@@ -56,6 +56,7 @@ public class LocalizationService : ILocalizationService
                 new("pl-PL", "Polski", "Polish"),
                 new("ro-RO", "Română", "Romanian"),
                 new("uk-UA", "Українська", "Ukrainian"),
+                new("ru-RU", "Русский", "Russian"),
                 new("zh-CN", "简体中文", "Chinese (Simplified)"),
                 new("ja-JP", "日本語", "Japanese"),
                 new("ko-KR", "한국어", "Korean")
@@ -126,7 +127,14 @@ public class LocalizationService : ILocalizationService
         if (string.IsNullOrEmpty(resourceKey))
             return string.Empty;
 
-        // 1. Try MRT Core ResourceLoader
+        string activeLang = GetEffectiveLanguageCode();
+
+        // 1. Resolve from loaded dictionary for active language (ensures immediate accuracy in all runtimes)
+        string? reswVal = ResolveFromResw(activeLang, resourceKey);
+        if (!string.IsNullOrEmpty(reswVal))
+            return reswVal;
+
+        // 2. Try MRT Core ResourceLoader
         if (_resourceLoader != null)
         {
             try
@@ -145,12 +153,6 @@ public class LocalizationService : ILocalizationService
             }
             catch { }
         }
-
-        // 2. Fallback to loaded XML .resw files directly (crucial for unit test runner & unpackaged reliability)
-        string activeLang = GetEffectiveLanguageCode();
-        string? reswVal = ResolveFromResw(activeLang, resourceKey);
-        if (!string.IsNullOrEmpty(reswVal))
-            return reswVal;
 
         // 3. Fallback to base language (en-US)
         if (!activeLang.Equals("en-US", StringComparison.OrdinalIgnoreCase))
