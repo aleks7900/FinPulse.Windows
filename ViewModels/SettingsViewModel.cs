@@ -257,11 +257,20 @@ public class SettingsViewModel : ViewModelBase
         try
         {
             await _authService.SignInWithGoogleAsync();
+            CurrentUser = _authService.CurrentUser;
+            OnPropertyChanged(nameof(IsLoggedIn));
+            OnPropertyChanged(nameof(IsNotLoggedIn));
+            UpdateSyncStatus();
             await PerformSyncAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelled by user in browser
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Google Sign-In failed: {ex}");
+            throw;
         }
         finally
         {
@@ -278,6 +287,10 @@ public class SettingsViewModel : ViewModelBase
         try
         {
             await _authService.SignInWithGoogleAccountAsync(email, displayName);
+            CurrentUser = _authService.CurrentUser;
+            OnPropertyChanged(nameof(IsLoggedIn));
+            OnPropertyChanged(nameof(IsNotLoggedIn));
+            UpdateSyncStatus();
             await PerformSyncAsync();
         }
         catch (Exception ex)

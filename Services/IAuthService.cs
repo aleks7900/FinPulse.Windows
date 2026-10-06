@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FinPulse.Windows.Services;
@@ -28,13 +29,13 @@ public interface IAuthService
     event EventHandler<UserSession?>? AuthStateChanged;
 
     Task InitializeAsync();
-    Task<UserSession> SignInWithGoogleAsync();
-    Task<UserSession> SignInWithGoogleTokenAsync(string idToken);
+    Task<UserSession> SignInWithGoogleAsync(CancellationToken cancellationToken = default);
+    Task<UserSession> SignInWithGoogleTokenAsync(string googleIdToken);
     Task<UserSession> SignInWithGoogleAccountAsync(string email, string? displayName = null, string? photoUrl = null);
     Task<UserSession> SignInWithEmailPasswordAsync(string email, string password);
     Task<UserSession> SignUpWithEmailPasswordAsync(string email, string password);
     Task<UserSession> SignInAnonymouslyAsync();
     Task<UserSession> UseDemoAccountAsync();
     Task SignOutAsync();
-    Task<string?> GetValidTokenAsync();
+    Task<string?> GetValidTokenAsync(CancellationToken cancellationToken = default);
 }

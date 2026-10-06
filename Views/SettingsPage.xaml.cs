@@ -61,59 +61,71 @@ public sealed partial class SettingsPage : Page
 
     private async void SignInGoogleButton_Click(object sender, RoutedEventArgs e)
     {
-        var loc = LocalizationService.Current;
-        var googleEmailBox = new TextBox
+        try
         {
-            Header = loc.GetString("Settings_GoogleDialog_EmailHeader"),
-            PlaceholderText = "alex@gmail.com",
-            Text = "alex@gmail.com"
-        };
-        var displayNameBox = new TextBox
-        {
-            Header = loc.GetString("Settings_GoogleDialog_NameHeader"),
-            PlaceholderText = "Alex"
-        };
-
-        var browserAuthButton = new Button
-        {
-            Content = loc.GetString("Settings_GoogleDialog_BrowserButton"),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Margin = new Thickness(0, 0, 0, 4)
-        };
-
-        var panel = new StackPanel { Spacing = 14, Width = 360 };
-
-        panel.Children.Add(new TextBlock
-        {
-            Text = loc.GetString("Settings_GoogleDialog_Prompt"),
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 13
-        });
-
-        panel.Children.Add(browserAuthButton);
-        panel.Children.Add(googleEmailBox);
-        panel.Children.Add(displayNameBox);
-
-        var dialog = new ContentDialog
-        {
-            Title = loc.GetString("Settings_GoogleDialog_Title"),
-            Content = panel,
-            PrimaryButtonText = loc.GetString("Settings_GoogleDialog_ConnectButton"),
-            CloseButtonText = loc.GetString("Common_Cancel"),
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot
-        };
-
-        browserAuthButton.Click += async (s, args) =>
-        {
-            dialog.Hide();
             await ViewModel.SignInGoogleAsync();
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(googleEmailBox.Text))
+        }
+        catch (OperationCanceledException)
         {
-            await ViewModel.SignInGoogleAccountAsync(googleEmailBox.Text.Trim(), displayNameBox.Text.Trim());
+            // Cancelled in browser by user
+        }
+        catch (Exception)
+        {
+            // If browser could not be launched or OAuth encountered network difficulty,
+            // provide account connection dialog
+            var loc = LocalizationService.Current;
+            var googleEmailBox = new TextBox
+            {
+                Header = loc.GetString("Settings_GoogleDialog_EmailHeader"),
+                PlaceholderText = "alex@gmail.com",
+                Text = "alex@gmail.com"
+            };
+            var displayNameBox = new TextBox
+            {
+                Header = loc.GetString("Settings_GoogleDialog_NameHeader"),
+                PlaceholderText = "Alex"
+            };
+
+            var browserAuthButton = new Button
+            {
+                Content = loc.GetString("Settings_GoogleDialog_BrowserButton"),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(0, 0, 0, 4)
+            };
+
+            var panel = new StackPanel { Spacing = 14, Width = 360 };
+            panel.Children.Add(new TextBlock
+            {
+                Text = loc.GetString("Settings_GoogleDialog_Prompt"),
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 13
+            });
+
+            panel.Children.Add(browserAuthButton);
+            panel.Children.Add(googleEmailBox);
+            panel.Children.Add(displayNameBox);
+
+            var dialog = new ContentDialog
+            {
+                Title = loc.GetString("Settings_GoogleDialog_Title"),
+                Content = panel,
+                PrimaryButtonText = loc.GetString("Settings_GoogleDialog_ConnectButton"),
+                CloseButtonText = loc.GetString("Common_Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = XamlRoot
+            };
+
+            browserAuthButton.Click += async (s, args) =>
+            {
+                dialog.Hide();
+                await ViewModel.SignInGoogleAsync();
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(googleEmailBox.Text))
+            {
+                await ViewModel.SignInGoogleAccountAsync(googleEmailBox.Text.Trim(), displayNameBox.Text.Trim());
+            }
         }
     }
 }

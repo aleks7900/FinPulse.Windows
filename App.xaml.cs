@@ -23,6 +23,9 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         // Core Services
+        services.AddSingleton<HttpClient>();
+        services.AddSingleton<ISecureCredentialStorage, WindowsSecureCredentialStorage>();
+        services.AddSingleton<IGoogleOAuthHandler, GoogleOAuthHandler>();
         services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<IAuthService, FirebaseAuthService>();
         services.AddSingleton<IFirestoreClient, FirestoreRestClient>();

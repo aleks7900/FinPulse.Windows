@@ -11,8 +11,7 @@ namespace FinPulse.Windows.Services;
 
 public class FirestoreRestClient : IFirestoreClient
 {
-    private const string ProjectId = "finpulse-cloud";
-    private const string BaseFirestoreUrl = $"https://firestore.googleapis.com/v1/projects/{ProjectId}/databases/(default)/documents";
+    private static string BaseFirestoreUrl => FirebaseConfig.BaseFirestoreUrl;
 
     private readonly HttpClient _httpClient;
     private readonly IAuthService _authService;

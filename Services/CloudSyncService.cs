@@ -26,7 +26,7 @@ public class CloudSyncService : ISyncService, IDisposable
     private readonly Timer _periodicTimer;
     private bool _isDisposed;
 
-    public SyncStatus CurrentStatus { get; private set; } = SyncStatus.IDLE;
+    public SyncStatus CurrentStatus { get; private set; } = SyncStatus.SIGNED_OUT;
     public long LastSyncTimestamp { get; private set; } = 0L;
     public int PendingChangesCount => _pendingCount;
     public string? LastErrorMessage { get; private set; }
@@ -85,6 +85,8 @@ public class CloudSyncService : ISyncService, IDisposable
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
         }
         catch { }
+
+        CurrentStatus = _authService.IsLoggedIn ? SyncStatus.IDLE : SyncStatus.SIGNED_OUT;
     }
 
     private void OnLocalDataChanged(object? sender, EventArgs e)
@@ -130,7 +132,7 @@ public class CloudSyncService : ISyncService, IDisposable
         else
         {
             LastSyncTimestamp = 0;
-            SetStatus(SyncStatus.IDLE);
+            SetStatus(SyncStatus.SIGNED_OUT);
         }
     }
 
@@ -180,7 +182,7 @@ public class CloudSyncService : ISyncService, IDisposable
         var user = _authService.CurrentUser;
         if (user == null || string.IsNullOrWhiteSpace(user.Uid))
         {
-            SetStatus(SyncStatus.IDLE);
+            SetStatus(SyncStatus.SIGNED_OUT);
             return new SyncResult { IsSuccess = false, ErrorMessage = "No user logged in" };
         }
 

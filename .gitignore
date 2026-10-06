@@ -52,3 +52,7 @@ _ReSharper*/
 # Generated files
 Generated\ Files/
 *_wpftmp.csproj
+
+# Secrets and OAuth client secrets
+client_secret*.json
+*.secret.json

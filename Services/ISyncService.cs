@@ -6,6 +6,7 @@ namespace FinPulse.Windows.Services;
 
 public enum SyncStatus
 {
+    SIGNED_OUT,
     IDLE,
     SYNCING,
     SUCCESS,

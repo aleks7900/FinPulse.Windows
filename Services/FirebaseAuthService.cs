@@ -1,20 +1,27 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FinPulse.Windows.Services;
 
+/// <summary>
+/// Production-ready Firebase Authentication service for FinPulse Windows.
+/// Authenticates Google identities against the canonical Firebase project,
+/// manages token lifecycles with single-flight concurrency locking, and
+/// integrates with Windows secure credential storage.
+/// </summary>
 public class FirebaseAuthService : IAuthService
 {
-    private const string ApiKey = "AIzaSyAptMbFVj25my_TsUrvPn_6DvvSJJQF_-o";
-    private const string BaseAuthUrl = "https://identitytoolkit.googleapis.com/v1/accounts";
-    private const string SecureTokenUrl = "https://securetoken.googleapis.com/v1/token";
-
     private readonly HttpClient _httpClient;
-    private readonly string _sessionFilePath;
+    private readonly ISecureCredentialStorage _secureStorage;
+    private readonly IGoogleOAuthHandler _googleOAuthHandler;
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+
     private UserSession? _currentUser;
 
     public UserSession? CurrentUser => _currentUser;
@@ -22,136 +29,75 @@ public class FirebaseAuthService : IAuthService
 
     public event EventHandler<UserSession?>? AuthStateChanged;
 
-    public FirebaseAuthService(HttpClient? httpClient = null)
+    public FirebaseAuthService(
+        HttpClient? httpClient = null,
+        ISecureCredentialStorage? secureStorage = null,
+        IGoogleOAuthHandler? googleOAuthHandler = null)
     {
         _httpClient = httpClient ?? new HttpClient();
-
-        string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        string appDir = Path.Combine(localAppData, "FinPulseCompanion");
-        Directory.CreateDirectory(appDir);
-        _sessionFilePath = Path.Combine(appDir, "session.json");
+        _secureStorage = secureStorage ?? new WindowsSecureCredentialStorage();
+        _googleOAuthHandler = googleOAuthHandler ?? new GoogleOAuthHandler(_httpClient);
     }
 
     public async Task InitializeAsync()
     {
         try
         {
-            if (File.Exists(_sessionFilePath))
+            var session = await _secureStorage.LoadSessionAsync();
+            if (session != null && !string.IsNullOrWhiteSpace(session.Uid) && session.Uid != "local_default_user")
             {
-                string json = await File.ReadAllTextAsync(_sessionFilePath);
-                var session = JsonSerializer.Deserialize<UserSession>(json);
-                if (session != null && !string.IsNullOrWhiteSpace(session.Uid) && session.Uid != "local_default_user")
+                _currentUser = session;
+                // Proactively refresh token in background if approaching expiration
+                _ = Task.Run(async () =>
                 {
-                    _currentUser = session;
-                    // Proactively refresh token if expired
-                    _ = RefreshTokenIfNeededAsync();
-                    AuthStateChanged?.Invoke(this, _currentUser);
-                    return;
-                }
-                else if (session?.Uid == "local_default_user")
-                {
-                    // Clean up legacy local user session file
-                    try { File.Delete(_sessionFilePath); } catch { }
-                }
+                    try { await GetValidTokenAsync(); } catch { }
+                });
+                AuthStateChanged?.Invoke(this, _currentUser);
+                return;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Ignore corrupted session file
+            Debug.WriteLine($"[FirebaseAuth] Could not load persisted credentials: {ex.Message}");
         }
 
-        // Clean unauthenticated state: NO local user account created
         _currentUser = null;
         AuthStateChanged?.Invoke(this, null);
     }
 
-    public async Task<UserSession> SignInWithEmailPasswordAsync(string email, string password)
+    public async Task<UserSession> SignInWithGoogleAsync(CancellationToken cancellationToken = default)
     {
-        string endpoint = $"{BaseAuthUrl}:signInWithPassword?key={ApiKey}";
-        var payload = new
+        // 1. Authenticate with Google via Desktop Browser + PKCE Loopback
+        var oauthResult = await _googleOAuthHandler.AuthenticateViaBrowserAsync(cancellationToken);
+
+        if (!oauthResult.IsSuccess)
         {
-            email,
-            password,
-            returnSecureToken = true
-        };
+            if (oauthResult.IsCancelled)
+            {
+                throw new OperationCanceledException(oauthResult.ErrorMessage ?? "Google Sign-In was cancelled.");
+            }
 
-        var response = await PostJsonAsync(endpoint, payload);
-        using var doc = JsonDocument.Parse(response);
-        var root = doc.RootElement;
+            throw new InvalidOperationException(oauthResult.ErrorMessage ?? "Google Sign-In failed.");
+        }
 
-        var session = new UserSession
+        if (string.IsNullOrWhiteSpace(oauthResult.IdToken))
         {
-            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
-            Email = root.GetProperty("email").GetString(),
-            DisplayName = root.TryGetProperty("displayName", out var dn) ? dn.GetString() : email.Split('@')[0],
-            IdToken = root.GetProperty("idToken").GetString() ?? "",
-            RefreshToken = root.GetProperty("refreshToken").GetString(),
-            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + long.Parse(root.GetProperty("expiresIn").GetString() ?? "3600"),
-            IsAnonymous = false
-        };
+            throw new InvalidOperationException("No Google ID token received from authentication flow.");
+        }
 
-        await SetSessionAsync(session);
-        return session;
+        // 2. Exchange Google ID token with Firebase Auth signInWithIdp
+        return await SignInWithGoogleTokenAsync(oauthResult.IdToken);
     }
 
-    public async Task<UserSession> SignUpWithEmailPasswordAsync(string email, string password)
+    public async Task<UserSession> SignInWithGoogleTokenAsync(string googleIdToken)
     {
-        string endpoint = $"{BaseAuthUrl}:signUp?key={ApiKey}";
+        if (string.IsNullOrWhiteSpace(googleIdToken))
+            throw new ArgumentException("Google ID token cannot be empty.", nameof(googleIdToken));
+
+        string endpoint = $"{FirebaseConfig.BaseAuthUrl}:signInWithIdp?key={FirebaseConfig.ApiKey}";
         var payload = new
         {
-            email,
-            password,
-            returnSecureToken = true
-        };
-
-        var response = await PostJsonAsync(endpoint, payload);
-        using var doc = JsonDocument.Parse(response);
-        var root = doc.RootElement;
-
-        var session = new UserSession
-        {
-            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
-            Email = root.GetProperty("email").GetString(),
-            DisplayName = email.Split('@')[0],
-            IdToken = root.GetProperty("idToken").GetString() ?? "",
-            RefreshToken = root.GetProperty("refreshToken").GetString(),
-            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + long.Parse(root.GetProperty("expiresIn").GetString() ?? "3600"),
-            IsAnonymous = false
-        };
-
-        await SetSessionAsync(session);
-        return session;
-    }
-
-    public async Task<UserSession> SignInAnonymouslyAsync()
-    {
-        string endpoint = $"{BaseAuthUrl}:signUp?key={ApiKey}";
-        var payload = new { returnSecureToken = true };
-
-        var response = await PostJsonAsync(endpoint, payload);
-        using var doc = JsonDocument.Parse(response);
-        var root = doc.RootElement;
-
-        var session = new UserSession
-        {
-            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
-            DisplayName = "Guest User",
-            IdToken = root.GetProperty("idToken").GetString() ?? "",
-            RefreshToken = root.GetProperty("refreshToken").GetString(),
-            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + long.Parse(root.GetProperty("expiresIn").GetString() ?? "3600"),
-            IsAnonymous = true
-        };
-
-        await SetSessionAsync(session);
-        return session;
-    }
-
-    public async Task<UserSession> SignInWithGoogleTokenAsync(string idToken)
-    {
-        string endpoint = $"{BaseAuthUrl}:signInWithIdp?key={ApiKey}";
-        var payload = new
-        {
-            postBody = $"id_token={idToken}&providerId=google.com",
+            postBody = $"id_token={googleIdToken}&providerId=google.com",
             requestUri = "http://localhost",
             returnIdpCredential = true,
             returnSecureToken = true
@@ -161,15 +107,31 @@ public class FirebaseAuthService : IAuthService
         using var doc = JsonDocument.Parse(response);
         var root = doc.RootElement;
 
+        // Extract canonical Firebase UID (localId)
+        string localId = root.GetProperty("localId").GetString()
+                         ?? throw new InvalidOperationException("Firebase signInWithIdp did not return a localId.");
+
+        string idToken = root.GetProperty("idToken").GetString() ?? "";
+        string? refreshToken = root.TryGetProperty("refreshToken", out var rtProp) ? rtProp.GetString() : null;
+        string? email = root.TryGetProperty("email", out var emProp) ? emProp.GetString() : null;
+        string? displayName = root.TryGetProperty("displayName", out var dnProp) ? dnProp.GetString() : null;
+        string? photoUrl = root.TryGetProperty("photoUrl", out var puProp) ? puProp.GetString() : null;
+
+        long expiresIn = 3600;
+        if (root.TryGetProperty("expiresIn", out var expProp))
+        {
+            long.TryParse(expProp.GetString(), out expiresIn);
+        }
+
         var session = new UserSession
         {
-            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
-            Email = root.TryGetProperty("email", out var em) ? em.GetString() : null,
-            DisplayName = root.TryGetProperty("displayName", out var dn) ? dn.GetString() : "Google User",
-            PhotoUrl = root.TryGetProperty("photoUrl", out var pu) ? pu.GetString() : null,
-            IdToken = root.GetProperty("idToken").GetString() ?? "",
-            RefreshToken = root.GetProperty("refreshToken").GetString(),
-            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + long.Parse(root.GetProperty("expiresIn").GetString() ?? "3600"),
+            Uid = localId,
+            Email = email,
+            DisplayName = !string.IsNullOrWhiteSpace(displayName) ? displayName : (email?.Split('@')[0] ?? "Google User"),
+            PhotoUrl = photoUrl,
+            IdToken = idToken,
+            RefreshToken = refreshToken,
+            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + expiresIn,
             ProviderId = "google.com",
             IsAnonymous = false
         };
@@ -188,7 +150,7 @@ public class FirebaseAuthService : IAuthService
             ? displayName.Trim()
             : char.ToUpper(cleanEmail[0]) + cleanEmail.Split('@')[0][1..];
 
-        // Generate consistent deterministic UID for Google User
+        // Generate consistent deterministic UID for test/offline sessions
         using var sha = System.Security.Cryptography.SHA256.Create();
         byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes("google:" + cleanEmail));
         string hex = Convert.ToHexString(hash).ToLowerInvariant()[..24];
@@ -202,6 +164,7 @@ public class FirebaseAuthService : IAuthService
             PhotoUrl = photoUrl,
             ProviderId = "google.com",
             IdToken = $"mock_google_id_token_{hex}",
+            RefreshToken = $"mock_google_refresh_token_{hex}",
             ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 86400 * 30, // 30 days
             IsAnonymous = false
         };
@@ -210,67 +173,106 @@ public class FirebaseAuthService : IAuthService
         return session;
     }
 
-    public async Task<UserSession> SignInWithGoogleAsync()
+    public async Task<UserSession> SignInWithEmailPasswordAsync(string email, string password)
     {
-        const string googleClientId = "500924060314-rfem2fmrnai3c9r3svjk4j86t8e34cpq.apps.googleusercontent.com";
-        int port = 51789;
-
-        System.Net.HttpListener? listener = null;
-        try
+        string endpoint = $"{FirebaseConfig.BaseAuthUrl}:signInWithPassword?key={FirebaseConfig.ApiKey}";
+        var payload = new
         {
-            listener = new System.Net.HttpListener();
-            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
-            listener.Start();
+            email,
+            password,
+            returnSecureToken = true
+        };
 
-            string redirectUri = $"http://127.0.0.1:{port}/";
-            string state = Guid.NewGuid().ToString("N");
-            string authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={googleClientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code&scope=openid%20profile%20email&state={state}";
+        var response = await PostJsonAsync(endpoint, payload);
+        using var doc = JsonDocument.Parse(response);
+        var root = doc.RootElement;
 
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = authUrl,
-                    UseShellExecute = true
-                });
-            }
-            catch
-            {
-                // Fallback if system browser could not be launched automatically
-            }
-
-            var getContextTask = listener.GetContextAsync();
-            var delayTask = Task.Delay(TimeSpan.FromSeconds(25));
-            var completedTask = await Task.WhenAny(getContextTask, delayTask);
-
-            if (completedTask == getContextTask)
-            {
-                var context = await getContextTask;
-                string? code = context.Request.QueryString["code"];
-
-                string responseString = "<!DOCTYPE html><html><body style='background:#121212;color:#fff;font-family:sans-serif;text-align:center;padding:50px;'><h2>✓ Google Sign-In Complete</h2><p>You can return to FinPulse Companion.</p></body></html>";
-                byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-                context.Response.ContentLength64 = buffer.Length;
-                await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-                context.Response.OutputStream.Close();
-
-                if (!string.IsNullOrEmpty(code))
-                {
-                    return await SignInWithGoogleAccountAsync("user@gmail.com", "Google Account User");
-                }
-            }
-        }
-        catch
+        long expiresIn = 3600;
+        if (root.TryGetProperty("expiresIn", out var expProp))
         {
-            // Port or listener restricted; proceed to direct Google sign-in
-        }
-        finally
-        {
-            try { listener?.Stop(); listener?.Close(); } catch { }
+            long.TryParse(expProp.GetString(), out expiresIn);
         }
 
-        // Return connected Google session
-        return await SignInWithGoogleAccountAsync("user@gmail.com", "Google Account User");
+        var session = new UserSession
+        {
+            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
+            Email = root.GetProperty("email").GetString(),
+            DisplayName = root.TryGetProperty("displayName", out var dn) ? dn.GetString() : email.Split('@')[0],
+            IdToken = root.GetProperty("idToken").GetString() ?? "",
+            RefreshToken = root.GetProperty("refreshToken").GetString(),
+            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + expiresIn,
+            ProviderId = "password",
+            IsAnonymous = false
+        };
+
+        await SetSessionAsync(session);
+        return session;
+    }
+
+    public async Task<UserSession> SignUpWithEmailPasswordAsync(string email, string password)
+    {
+        string endpoint = $"{FirebaseConfig.BaseAuthUrl}:signUp?key={FirebaseConfig.ApiKey}";
+        var payload = new
+        {
+            email,
+            password,
+            returnSecureToken = true
+        };
+
+        var response = await PostJsonAsync(endpoint, payload);
+        using var doc = JsonDocument.Parse(response);
+        var root = doc.RootElement;
+
+        long expiresIn = 3600;
+        if (root.TryGetProperty("expiresIn", out var expProp))
+        {
+            long.TryParse(expProp.GetString(), out expiresIn);
+        }
+
+        var session = new UserSession
+        {
+            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
+            Email = root.GetProperty("email").GetString(),
+            DisplayName = email.Split('@')[0],
+            IdToken = root.GetProperty("idToken").GetString() ?? "",
+            RefreshToken = root.GetProperty("refreshToken").GetString(),
+            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + expiresIn,
+            ProviderId = "password",
+            IsAnonymous = false
+        };
+
+        await SetSessionAsync(session);
+        return session;
+    }
+
+    public async Task<UserSession> SignInAnonymouslyAsync()
+    {
+        string endpoint = $"{FirebaseConfig.BaseAuthUrl}:signUp?key={FirebaseConfig.ApiKey}";
+        var payload = new { returnSecureToken = true };
+
+        var response = await PostJsonAsync(endpoint, payload);
+        using var doc = JsonDocument.Parse(response);
+        var root = doc.RootElement;
+
+        long expiresIn = 3600;
+        if (root.TryGetProperty("expiresIn", out var expProp))
+        {
+            long.TryParse(expProp.GetString(), out expiresIn);
+        }
+
+        var session = new UserSession
+        {
+            Uid = root.GetProperty("localId").GetString() ?? Guid.NewGuid().ToString(),
+            DisplayName = "Guest User",
+            IdToken = root.GetProperty("idToken").GetString() ?? "",
+            RefreshToken = root.GetProperty("refreshToken").GetString(),
+            ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + expiresIn,
+            ProviderId = "anonymous",
+            IsAnonymous = true
+        };
+
+        await SetSessionAsync(session);
+        return session;
     }
 
     public async Task<UserSession> UseDemoAccountAsync()
@@ -280,6 +282,7 @@ public class FirebaseAuthService : IAuthService
             Uid = "demo_account_finpulse",
             Email = "demo@finpulse.app",
             DisplayName = "Alex (FinPulse Demo)",
+            ProviderId = "demo",
             IsAnonymous = false
         };
 
@@ -290,81 +293,98 @@ public class FirebaseAuthService : IAuthService
     public async Task SignOutAsync()
     {
         _currentUser = null;
-        if (File.Exists(_sessionFilePath))
+        try
         {
-            try { File.Delete(_sessionFilePath); } catch { }
+            await _secureStorage.ClearSessionAsync();
         }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[FirebaseAuth] Error clearing credentials: {ex.Message}");
+        }
+
         AuthStateChanged?.Invoke(this, null);
-        await Task.CompletedTask;
     }
 
-    public async Task<string?> GetValidTokenAsync()
+    public async Task<string?> GetValidTokenAsync(CancellationToken cancellationToken = default)
     {
         if (_currentUser == null) return null;
 
-        if (string.IsNullOrWhiteSpace(_currentUser.RefreshToken))
-            return _currentUser.IdToken;
-
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        if (now >= _currentUser.ExpiresAt - 120) // Refresh 2 minutes before expiry
+        // If token has more than 2 minutes of lifetime remaining, return current token immediately
+        if (now < _currentUser.ExpiresAt - 120 && !string.IsNullOrWhiteSpace(_currentUser.IdToken))
         {
-            await RefreshTokenIfNeededAsync();
+            return _currentUser.IdToken;
+        }
+
+        if (string.IsNullOrWhiteSpace(_currentUser.RefreshToken))
+        {
+            return _currentUser.IdToken;
+        }
+
+        // Single-flight locking to prevent 10 concurrent requests from triggering 10 simultaneous refresh calls
+        await _refreshLock.WaitAsync(cancellationToken);
+        try
+        {
+            // Double-check inside lock
+            now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (now < _currentUser.ExpiresAt - 120 && !string.IsNullOrWhiteSpace(_currentUser.IdToken))
+            {
+                return _currentUser.IdToken;
+            }
+
+            string url = $"{FirebaseConfig.SecureTokenUrl}?key={FirebaseConfig.ApiKey}";
+            var postData = new Dictionary<string, string>
+            {
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = _currentUser.RefreshToken
+            };
+
+            using var content = new FormUrlEncodedContent(postData);
+            using var response = await _httpClient.PostAsync(url, content, cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                string resStr = await response.Content.ReadAsStringAsync(cancellationToken);
+                using var doc = JsonDocument.Parse(resStr);
+                var root = doc.RootElement;
+
+                _currentUser.IdToken = root.GetProperty("id_token").GetString() ?? _currentUser.IdToken;
+                if (root.TryGetProperty("refresh_token", out var rt))
+                {
+                    _currentUser.RefreshToken = rt.GetString() ?? _currentUser.RefreshToken;
+                }
+                string expiresInStr = root.GetProperty("expires_in").GetString() ?? "3600";
+                long.TryParse(expiresInStr, out long expiresIn);
+                _currentUser.ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + expiresIn;
+
+                await _secureStorage.SaveSessionAsync(_currentUser);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[FirebaseAuth] Token refresh warning: {ex.Message}");
+            // Return existing token as fallback if network is temporarily unreachable
+        }
+        finally
+        {
+            _refreshLock.Release();
         }
 
         return _currentUser.IdToken;
     }
 
-    private async Task RefreshTokenIfNeededAsync()
-    {
-        if (_currentUser == null || string.IsNullOrWhiteSpace(_currentUser.RefreshToken))
-            return;
-
-        try
-        {
-            string url = $"{SecureTokenUrl}?key={ApiKey}";
-            var payload = new
-            {
-                grant_type = "refresh_token",
-                refresh_token = _currentUser.RefreshToken
-            };
-
-            var jsonContent = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(url, jsonContent);
-            if (response.IsSuccessStatusCode)
-            {
-                string resStr = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(resStr);
-                var root = doc.RootElement;
-
-                _currentUser.IdToken = root.GetProperty("id_token").GetString() ?? _currentUser.IdToken;
-                _currentUser.RefreshToken = root.GetProperty("refresh_token").GetString() ?? _currentUser.RefreshToken;
-                _currentUser.ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + long.Parse(root.GetProperty("expires_in").GetString() ?? "3600");
-
-                await SaveSessionToFileAsync();
-            }
-        }
-        catch
-        {
-            // If offline, continue using current token
-        }
-    }
-
     private async Task SetSessionAsync(UserSession session)
     {
         _currentUser = session;
-        await SaveSessionToFileAsync();
-        AuthStateChanged?.Invoke(this, _currentUser);
-    }
-
-    private async Task SaveSessionToFileAsync()
-    {
-        if (_currentUser == null) return;
         try
         {
-            string json = JsonSerializer.Serialize(_currentUser, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(_sessionFilePath, json);
+            await _secureStorage.SaveSessionAsync(session);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[FirebaseAuth] Could not persist session: {ex.Message}");
+        }
+
+        AuthStateChanged?.Invoke(this, _currentUser);
     }
 
     private async Task<string> PostJsonAsync(string url, object body)
