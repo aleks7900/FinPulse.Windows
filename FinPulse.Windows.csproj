@@ -60,9 +60,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Strings\**\*.resw">
+    <Content Include="Strings\**\*.resw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
