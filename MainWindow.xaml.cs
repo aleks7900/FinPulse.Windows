@@ -88,17 +88,22 @@ public sealed partial class MainWindow : Window
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        App.LogDiagnostic($"MainWindow_Closed triggered. Handled={args.Handled}");
         try
         {
             (App.Services.GetService<ICloudSyncCoordinator>() as IDisposable)?.Dispose();
             (App.Services.GetService<ISyncService>() as IDisposable)?.Dispose();
             (App.Services.GetService<ILocalDataStore>() as IDisposable)?.Dispose();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            App.LogDiagnostic($"Exception in MainWindow_Closed: {ex}");
+        }
     }
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        App.LogDiagnostic($"MainWindow_Activated state={args.WindowActivationState}");
         if (args.WindowActivationState != WindowActivationState.Deactivated)
         {
             try
@@ -106,7 +111,10 @@ public sealed partial class MainWindow : Window
                 var coordinator = App.Services.GetService<ICloudSyncCoordinator>();
                 coordinator?.TriggerForegroundSync();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                App.LogDiagnostic($"Exception in TriggerForegroundSync: {ex}");
+            }
         }
     }
 
