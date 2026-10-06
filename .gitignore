@@ -56,3 +56,7 @@ Generated\ Files/
 # Secrets and OAuth client secrets
 client_secret*.json
 *.secret.json
+
+# Build
+dist/*
+publish_release/*
