@@ -87,28 +87,34 @@ public class CloudSyncService : ISyncService, IDisposable
 
     private void OnLocalDataChanged(object? sender, EventArgs e)
     {
-        _ = UpdatePendingCountAsync();
-
-        // If online and logged in, debounce a sync pass
-        if (_authService.IsLoggedIn && IsNetworkAvailable())
-        {
-            _debounceTimer.Change(2500, Timeout.Infinite);
-        }
-        else if (!IsNetworkAvailable() && _pendingCount > 0)
-        {
-            SetStatus(SyncStatus.PENDING_CHANGES);
-        }
+        _ = HandleLocalDataChangedAsync();
     }
 
-    private async Task UpdatePendingCountAsync()
+    private async Task HandleLocalDataChangedAsync()
     {
+        // Never trigger debounced sync while a sync pass is currently executing
+        if (CurrentStatus == SyncStatus.SYNCING) return;
+
         try
         {
             var pending = await _localStore.GetPendingSyncItemsAsync();
             _pendingCount = pending.Count;
-            if (_pendingCount > 0 && CurrentStatus == SyncStatus.IDLE)
+
+            if (_pendingCount > 0)
             {
-                SetStatus(SyncStatus.PENDING_CHANGES);
+                if (_authService.IsLoggedIn && IsNetworkAvailable())
+                {
+                    // Debounce a sync pass ONLY when there are actual pending local changes to upload
+                    _debounceTimer.Change(2500, Timeout.Infinite);
+                }
+                else
+                {
+                    SetStatus(SyncStatus.PENDING_CHANGES);
+                }
+            }
+            else if (CurrentStatus != SyncStatus.SUCCESS && CurrentStatus != SyncStatus.ERROR)
+            {
+                SetStatus(_authService.IsLoggedIn ? SyncStatus.IDLE : SyncStatus.SIGNED_OUT);
             }
         }
         catch { }
@@ -116,38 +122,29 @@ public class CloudSyncService : ISyncService, IDisposable
 
     private void OnAuthStateChanged(object? sender, UserSession? user)
     {
-        if (user != null && !string.IsNullOrWhiteSpace(user.Uid))
-        {
-            // Auto sync upon user sign-in
-            Task.Run(async () =>
-            {
-                await Task.Delay(500); // brief settling period
-                await PerformFullSyncAsync();
-            });
-        }
-        else
+        if (user == null || string.IsNullOrWhiteSpace(user.Uid))
         {
             LastSyncTimestamp = 0;
             SetStatus(SyncStatus.SIGNED_OUT);
+        }
+        else
+        {
+            SetStatus(SyncStatus.IDLE);
         }
     }
 
     private void OnNetworkAddressChanged(object? sender, EventArgs e)
     {
-        if (IsNetworkAvailable() && _authService.IsLoggedIn)
+        if (!IsNetworkAvailable() && _pendingCount > 0)
         {
-            Debug.WriteLine("[CloudSync] Network connectivity restored. Triggering sync...");
-            Task.Run(async () =>
-            {
-                await Task.Delay(1500); // Allow interface routing table to settle
-                await PerformFullSyncAsync();
-            });
+            SetStatus(SyncStatus.PENDING_CHANGES);
         }
     }
 
     private void OnDebounceTimerElapsed(object? state)
     {
-        if (_authService.IsLoggedIn && IsNetworkAvailable())
+        // Only run debounced sync if there are pending local changes and not already syncing
+        if (_pendingCount > 0 && CurrentStatus != SyncStatus.SYNCING && _authService.IsLoggedIn && IsNetworkAvailable())
         {
             _ = PerformFullSyncAsync();
         }

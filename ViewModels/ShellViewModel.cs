@@ -38,9 +38,9 @@ public class ShellViewModel : ViewModelBase
 
     public ICloudSyncCoordinator Coordinator => _syncCoordinator;
     public GlobalSyncState SyncState => _syncCoordinator.State;
-    public bool IsSyncing => _syncCoordinator.IsSyncing;
-    public bool IsNotSyncing => !_syncCoordinator.IsSyncing;
-    public bool CanTriggerSync => !_syncCoordinator.IsSyncing;
+    public bool IsSyncing => _syncCoordinator.IsSyncing || SyncState == GlobalSyncState.Syncing;
+    public bool IsNotSyncing => !IsSyncing;
+    public bool CanTriggerSync => !IsSyncing;
     public Microsoft.UI.Xaml.Visibility SyncProgressVisibility => IsSyncing ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
     public Microsoft.UI.Xaml.Visibility SyncIconVisibility => IsSyncing ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
 
@@ -243,25 +243,41 @@ public class ShellViewModel : ViewModelBase
         });
     }
 
+    private void SafeDispatch(Action action)
+    {
+        var dispatcher = App.RootWindow?.DispatcherQueue;
+        if (dispatcher != null && !dispatcher.HasThreadAccess)
+        {
+            dispatcher.TryEnqueue(() => action());
+        }
+        else
+        {
+            action();
+        }
+    }
+
     private void UpdateAllSyncProperties()
     {
-        OnPropertyChanged(nameof(SyncState));
-        OnPropertyChanged(nameof(IsSyncing));
-        OnPropertyChanged(nameof(IsNotSyncing));
-        OnPropertyChanged(nameof(CanTriggerSync));
-        OnPropertyChanged(nameof(SyncProgressVisibility));
-        OnPropertyChanged(nameof(SyncIconVisibility));
-        OnPropertyChanged(nameof(GlobalSyncStatusLabel));
-        OnPropertyChanged(nameof(GlobalSyncIconGlyph));
-        OnPropertyChanged(nameof(GlobalSyncIconBrush));
-        OnPropertyChanged(nameof(GlobalSyncLabelBrush));
-        OnPropertyChanged(nameof(GlobalSyncTooltip));
-
-        SyncStatusBadge = _syncService.CurrentStatus switch
+        SafeDispatch(() =>
         {
-            SyncStatus.SYNCING => LocalizationService.Current.GetString("Shell_Sync_Syncing", "Syncing..."),
-            SyncStatus.ERROR => LocalizationService.Current.GetString("Shell_Sync_Error", "Sync Error"),
-            _ => LocalizationService.Current.GetString("Shell_Sync_OK", "Sync: OK")
-        };
+            OnPropertyChanged(nameof(SyncState));
+            OnPropertyChanged(nameof(IsSyncing));
+            OnPropertyChanged(nameof(IsNotSyncing));
+            OnPropertyChanged(nameof(CanTriggerSync));
+            OnPropertyChanged(nameof(SyncProgressVisibility));
+            OnPropertyChanged(nameof(SyncIconVisibility));
+            OnPropertyChanged(nameof(GlobalSyncStatusLabel));
+            OnPropertyChanged(nameof(GlobalSyncIconGlyph));
+            OnPropertyChanged(nameof(GlobalSyncIconBrush));
+            OnPropertyChanged(nameof(GlobalSyncLabelBrush));
+            OnPropertyChanged(nameof(GlobalSyncTooltip));
+
+            SyncStatusBadge = _syncService.CurrentStatus switch
+            {
+                SyncStatus.SYNCING => LocalizationService.Current.GetString("Shell_Sync_Syncing", "Syncing..."),
+                SyncStatus.ERROR => LocalizationService.Current.GetString("Shell_Sync_Error", "Sync Error"),
+                _ => LocalizationService.Current.GetString("Shell_Sync_OK", "Sync: OK")
+            };
+        });
     }
 }

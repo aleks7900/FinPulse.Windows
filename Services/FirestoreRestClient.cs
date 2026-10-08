@@ -25,7 +25,7 @@ public class FirestoreRestClient : IFirestoreClient
     public FirestoreRestClient(IAuthService authService, HttpClient? httpClient = null)
     {
         _authService = authService;
-        _httpClient = httpClient ?? new HttpClient();
+        _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
     }
 
     private async Task<HttpRequestMessage> CreateAuthorizedRequestAsync(HttpMethod method, string url)

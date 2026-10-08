@@ -25,40 +25,6 @@ public sealed partial class SettingsPage : Page
         await ViewModel.InitializeAsync();
     }
 
-    private async void SignInEmailButton_Click(object sender, RoutedEventArgs e)
-    {
-        var loc = LocalizationService.Current;
-        var emailBox = new TextBox
-        {
-            Header = loc.GetString("Settings_SignInDialog_EmailHeader"),
-            PlaceholderText = "alex@example.com"
-        };
-        var passwordBox = new PasswordBox
-        {
-            Header = loc.GetString("Settings_SignInDialog_PasswordHeader")
-        };
-
-        var panel = new StackPanel { Spacing = 12, Width = 340 };
-        panel.Children.Add(emailBox);
-        panel.Children.Add(passwordBox);
-
-        var dialog = new ContentDialog
-        {
-            Title = loc.GetString("Settings_SignInDialog_Title"),
-            Content = panel,
-            PrimaryButtonText = loc.GetString("Settings_SignInDialog_Button"),
-            CloseButtonText = loc.GetString("Common_Cancel"),
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(emailBox.Text))
-        {
-            await ViewModel.SignInEmailAsync(emailBox.Text.Trim(), passwordBox.Password);
-        }
-    }
-
     private async void SignInGoogleButton_Click(object sender, RoutedEventArgs e)
     {
         try

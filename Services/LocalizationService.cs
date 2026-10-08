@@ -278,21 +278,33 @@ public class LocalizationService : ILocalizationService
             if (reswPath == null || !File.Exists(reswPath))
                 return dict;
 
-            try
+            for (int attempt = 0; attempt < 5; attempt++)
             {
-                using var stream = new FileStream(reswPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                var doc = XDocument.Load(stream);
-                foreach (var data in doc.Descendants("data"))
+                try
                 {
-                    var nameAttr = data.Attribute("name")?.Value;
-                    var valElem = data.Element("value")?.Value;
-                    if (!string.IsNullOrEmpty(nameAttr) && valElem != null)
+                    using var stream = new FileStream(reswPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                    var doc = XDocument.Load(stream);
+                    foreach (var data in doc.Descendants("data"))
                     {
-                        dict[nameAttr] = valElem;
+                        var nameAttr = data.Attribute("name")?.Value;
+                        var valElem = data.Element("value")?.Value;
+                        if (!string.IsNullOrEmpty(nameAttr) && valElem != null)
+                        {
+                            dict[nameAttr] = valElem;
+                        }
                     }
+                    if (dict.Count > 0)
+                        break;
+                }
+                catch (IOException)
+                {
+                    System.Threading.Thread.Sleep(50);
+                }
+                catch
+                {
+                    break;
                 }
             }
-            catch { }
 
             return dict;
         });

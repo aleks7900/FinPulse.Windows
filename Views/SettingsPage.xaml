@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="FinPulse.Windows.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -94,13 +94,6 @@
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Text="G" FontWeight="Bold" FontSize="14" Foreground="White" />
                                             <TextBlock x:Uid="Settings_SignInGoogleButton" services:Loc.Uid="Settings_SignInGoogleButton" Text="Sign in with Google" FontWeight="SemiBold" />
-                                        </StackPanel>
-                                    </Button>
-
-                                    <Button Click="SignInEmailButton_Click">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <FontIcon Glyph="&#xE715;" FontSize="13" />
-                                            <TextBlock x:Uid="Settings_SignInEmailButton" services:Loc.Uid="Settings_SignInEmailButton" Text="Email" />
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
