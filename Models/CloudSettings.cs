@@ -54,4 +54,7 @@ public class CloudSettings
 
     [JsonPropertyName("deviceModel")]
     public string? DeviceModel { get; set; } = "Windows 11 Companion";
+
+    [JsonPropertyName("hasSeededInitialData")]
+    public bool HasSeededInitialData { get; set; } = false;
 }

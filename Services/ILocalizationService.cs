@@ -15,4 +15,5 @@ public interface ILocalizationService
     string GetString(string resourceKey, string? fallback = null);
     string Format(string resourceKey, params object[] args);
     void ApplyLanguage(string languageCode);
+    string GetEffectiveLanguageCode();
 }

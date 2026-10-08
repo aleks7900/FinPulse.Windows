@@ -98,6 +98,73 @@ public static class CurrencyConfig
         return Math.Round((decimal)amountMinor / divisor, DecimalsFor(currencyCode), MidpointRounding.ToEven);
     }
 
+    public static readonly Dictionary<string, double> DefaultUsdRates = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["USD"] = 1.0,
+        ["EUR"] = 0.92,
+        ["GBP"] = 0.78,
+        ["MDL"] = 17.80,
+        ["RON"] = 4.58,
+        ["UAH"] = 41.20,
+        ["PLN"] = 3.96,
+        ["CHF"] = 0.89,
+        ["JPY"] = 152.0,
+        ["CNY"] = 7.23,
+        ["CAD"] = 1.36,
+        ["AUD"] = 1.52,
+        ["BRL"] = 5.45,
+        ["TRY"] = 34.10,
+        ["KRW"] = 1380.0,
+        ["INR"] = 83.50,
+        ["MXN"] = 18.20,
+        ["SEK"] = 10.45,
+        ["NOK"] = 10.65,
+        ["DKK"] = 6.85,
+        ["CZK"] = 23.10,
+        ["HUF"] = 365.0,
+        ["BGN"] = 1.79,
+        ["SGD"] = 1.32,
+        ["HKD"] = 7.80,
+        ["NZD"] = 1.63,
+        ["AED"] = 3.67,
+        ["SAR"] = 3.75,
+        ["ILS"] = 3.70,
+        ["ZAR"] = 18.20,
+        ["BHD"] = 0.377,
+        ["KWD"] = 0.307,
+        ["OMR"] = 0.385
+    };
+
+    public static double GetExchangeRate(string fromCurrency, string toCurrency)
+    {
+        if (string.IsNullOrWhiteSpace(fromCurrency)) fromCurrency = "USD";
+        if (string.IsNullOrWhiteSpace(toCurrency)) toCurrency = "USD";
+        string from = fromCurrency.Trim().ToUpperInvariant();
+        string to = toCurrency.Trim().ToUpperInvariant();
+        if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase)) return 1.0;
+
+        double fromUsd = DefaultUsdRates.TryGetValue(from, out var fRate) ? fRate : 1.0;
+        double toUsd = DefaultUsdRates.TryGetValue(to, out var tRate) ? tRate : 1.0;
+        if (fromUsd <= 0) fromUsd = 1.0;
+        if (toUsd <= 0) toUsd = 1.0;
+
+        return (1.0 / fromUsd) * toUsd;
+    }
+
+    public static Money Convert(Money money, string targetCurrency)
+    {
+        if (string.IsNullOrWhiteSpace(targetCurrency)) targetCurrency = "USD";
+        string target = targetCurrency.Trim().ToUpperInvariant();
+        if (string.Equals(money.CurrencyCode, target, StringComparison.OrdinalIgnoreCase))
+            return money;
+
+        double rate = GetExchangeRate(money.CurrencyCode, target);
+        decimal majorFrom = ToMajor(money.AmountMinor, money.CurrencyCode);
+        decimal majorTo = majorFrom * (decimal)rate;
+        long minorTo = ToMinor(majorTo, target);
+        return new Money(minorTo, target);
+    }
+
     public static string Format(Money money, CultureInfo? culture = null)
     {
         culture ??= CultureInfo.CurrentCulture;

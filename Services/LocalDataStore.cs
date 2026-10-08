@@ -70,9 +70,18 @@ public class LocalDataStore : ILocalDataStore
             }
 
             // Seed initial account and sample data if clean install
-            if (_accounts.IsEmpty)
+            if (!_settings.HasSeededInitialData && _accounts.IsEmpty && _tombstones.IsEmpty)
             {
                 await SeedInitialDataInternalAsync();
+            }
+
+            if (!string.IsNullOrWhiteSpace(_settings.SelectedLanguage))
+            {
+                try
+                {
+                    LocalizationService.Current.ApplyLanguage(_settings.SelectedLanguage);
+                }
+                catch { }
             }
         }
         finally
@@ -241,6 +250,9 @@ public class LocalDataStore : ILocalDataStore
         await SaveDictionaryAsync("budgets.json", _budgets);
         await SaveDictionaryAsync("recurring.json", _recurringRules);
         await SaveDictionaryAsync("goals.json", _goals);
+
+        _settings.HasSeededInitialData = true;
+        await SaveToFileAsync("settings.json", JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true }));
     }
 
     #region Accounts
@@ -343,11 +355,11 @@ public class LocalDataStore : ILocalDataStore
             if (_transactions.TryGetValue(transaction.Id, out var existing))
             {
                 // Reverse existing transaction effect
-                ReverseBalanceEffect(existing);
+                ReverseBalanceEffect(existing, markForSync);
             }
 
             // Apply new transaction balance effect
-            ApplyBalanceEffect(transaction);
+            ApplyBalanceEffect(transaction, markForSync);
             await SaveDictionaryAsync("accounts.json", _accounts);
         }
 
@@ -369,7 +381,7 @@ public class LocalDataStore : ILocalDataStore
         {
             if (adjustBalance)
             {
-                ReverseBalanceEffect(tx);
+                ReverseBalanceEffect(tx, markForSync);
                 await SaveDictionaryAsync("accounts.json", _accounts);
             }
             await SaveDictionaryAsync("transactions.json", _transactions);
@@ -386,32 +398,46 @@ public class LocalDataStore : ILocalDataStore
         }
     }
 
-    private void ApplyBalanceEffect(Transaction tx)
+    private void ApplyBalanceEffect(Transaction tx, bool markForSync = true)
     {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_accounts.TryGetValue(tx.SourceAccountId, out var srcAcc))
         {
             EnsureAvailableBalanceCurrency(srcAcc);
+            var srcAmount = CurrencyConfig.Convert(tx.Amount, srcAcc.Balance.CurrencyCode);
             switch (tx.Type)
             {
                 case TransactionType.INCOME or TransactionType.REFUND:
-                    srcAcc.Balance += tx.Amount;
-                    srcAcc.AvailableBalance += tx.Amount;
+                    srcAcc.Balance += srcAmount;
+                    srcAcc.AvailableBalance += srcAmount;
                     break;
                 case TransactionType.EXPENSE:
-                    srcAcc.Balance -= tx.Amount;
-                    srcAcc.AvailableBalance -= tx.Amount;
+                    srcAcc.Balance -= srcAmount;
+                    srcAcc.AvailableBalance -= srcAmount;
                     break;
                 case TransactionType.TRANSFER:
-                    srcAcc.Balance -= tx.Amount;
-                    srcAcc.AvailableBalance -= tx.Amount;
+                    srcAcc.Balance -= srcAmount;
+                    srcAcc.AvailableBalance -= srcAmount;
                     if (!string.IsNullOrEmpty(tx.DestinationAccountId) && _accounts.TryGetValue(tx.DestinationAccountId, out var dstAcc))
                     {
                         EnsureAvailableBalanceCurrency(dstAcc);
-                        var dstAmount = tx.DestinationAmount ?? tx.Amount;
+                        var dstAmount = tx.DestinationAmount.HasValue
+                            ? CurrencyConfig.Convert(tx.DestinationAmount.Value, dstAcc.Balance.CurrencyCode)
+                            : CurrencyConfig.Convert(tx.Amount, dstAcc.Balance.CurrencyCode);
                         dstAcc.Balance += dstAmount;
                         dstAcc.AvailableBalance += dstAmount;
+                        dstAcc.UpdatedAt = now;
+                        if (markForSync)
+                        {
+                            EnqueueSync("ACCOUNT", dstAcc.Id, "UPSERT", now);
+                        }
                     }
                     break;
+            }
+            srcAcc.UpdatedAt = now;
+            if (markForSync)
+            {
+                EnqueueSync("ACCOUNT", srcAcc.Id, "UPSERT", now);
             }
         }
     }
@@ -424,30 +450,46 @@ public class LocalDataStore : ILocalDataStore
         }
     }
 
-    private void ReverseBalanceEffect(Transaction tx)
+    private void ReverseBalanceEffect(Transaction tx, bool markForSync = true)
     {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_accounts.TryGetValue(tx.SourceAccountId, out var srcAcc))
         {
+            EnsureAvailableBalanceCurrency(srcAcc);
+            var srcAmount = CurrencyConfig.Convert(tx.Amount, srcAcc.Balance.CurrencyCode);
             switch (tx.Type)
             {
                 case TransactionType.INCOME or TransactionType.REFUND:
-                    srcAcc.Balance -= tx.Amount;
-                    srcAcc.AvailableBalance -= tx.Amount;
+                    srcAcc.Balance -= srcAmount;
+                    srcAcc.AvailableBalance -= srcAmount;
                     break;
                 case TransactionType.EXPENSE:
-                    srcAcc.Balance += tx.Amount;
-                    srcAcc.AvailableBalance += tx.Amount;
+                    srcAcc.Balance += srcAmount;
+                    srcAcc.AvailableBalance += srcAmount;
                     break;
                 case TransactionType.TRANSFER:
-                    srcAcc.Balance += tx.Amount;
-                    srcAcc.AvailableBalance += tx.Amount;
+                    srcAcc.Balance += srcAmount;
+                    srcAcc.AvailableBalance += srcAmount;
                     if (!string.IsNullOrEmpty(tx.DestinationAccountId) && _accounts.TryGetValue(tx.DestinationAccountId, out var dstAcc))
                     {
-                        var dstAmount = tx.DestinationAmount ?? tx.Amount;
+                        EnsureAvailableBalanceCurrency(dstAcc);
+                        var dstAmount = tx.DestinationAmount.HasValue
+                            ? CurrencyConfig.Convert(tx.DestinationAmount.Value, dstAcc.Balance.CurrencyCode)
+                            : CurrencyConfig.Convert(tx.Amount, dstAcc.Balance.CurrencyCode);
                         dstAcc.Balance -= dstAmount;
                         dstAcc.AvailableBalance -= dstAmount;
+                        dstAcc.UpdatedAt = now;
+                        if (markForSync)
+                        {
+                            EnqueueSync("ACCOUNT", dstAcc.Id, "UPSERT", now);
+                        }
                     }
                     break;
+            }
+            srcAcc.UpdatedAt = now;
+            if (markForSync)
+            {
+                EnqueueSync("ACCOUNT", srcAcc.Id, "UPSERT", now);
             }
         }
     }
@@ -680,6 +722,7 @@ public class LocalDataStore : ILocalDataStore
 
     public async Task SaveSettingsAsync(CloudSettings settings, bool markForSync = true)
     {
+        string? oldCurrency = _settings?.BaseCurrencyCode;
         if (markForSync || settings.UpdatedAt <= 0)
         {
             settings.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -691,6 +734,58 @@ public class LocalDataStore : ILocalDataStore
         {
             EnqueueSync("SETTINGS", CloudSettings.SettingsDocumentId, "UPSERT", settings.UpdatedAt);
         }
+
+        if (!string.IsNullOrWhiteSpace(oldCurrency) &&
+            !string.IsNullOrWhiteSpace(settings.BaseCurrencyCode) &&
+            !string.Equals(oldCurrency, settings.BaseCurrencyCode, StringComparison.OrdinalIgnoreCase))
+        {
+            await RecalculateBaseCurrencyAsync(settings.BaseCurrencyCode);
+            return;
+        }
+
+        DataChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public async Task RecalculateBaseCurrencyAsync(string newCurrencyCode)
+    {
+        if (string.IsNullOrWhiteSpace(newCurrencyCode)) return;
+        newCurrencyCode = newCurrencyCode.Trim().ToUpperInvariant();
+
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        bool anyChanged = false;
+
+        foreach (var acc in _accounts.Values)
+        {
+            var oldBalance = acc.Balance;
+            var oldAvailable = acc.AvailableBalance;
+
+            var newBalance = CurrencyConfig.Convert(oldBalance, newCurrencyCode);
+            var newAvailable = CurrencyConfig.Convert(oldAvailable, newCurrencyCode);
+            Money? newCreditLimit = acc.CreditLimit.HasValue
+                ? CurrencyConfig.Convert(acc.CreditLimit.Value, newCurrencyCode)
+                : null;
+
+            acc.Balance = newBalance;
+            acc.AvailableBalance = newAvailable;
+            acc.CreditLimit = newCreditLimit;
+            acc.UpdatedAt = now;
+            EnqueueSync("ACCOUNT", acc.Id, "UPSERT", now);
+            anyChanged = true;
+        }
+
+        if (anyChanged)
+        {
+            await SaveDictionaryAsync("accounts.json", _accounts);
+        }
+
+        if (!string.Equals(_settings.BaseCurrencyCode, newCurrencyCode, StringComparison.OrdinalIgnoreCase))
+        {
+            _settings.BaseCurrencyCode = newCurrencyCode;
+            _settings.UpdatedAt = now;
+            await SaveToFileAsync("settings.json", JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true }));
+            EnqueueSync("SETTINGS", CloudSettings.SettingsDocumentId, "UPSERT", now);
+        }
+
         DataChanged?.Invoke(this, EventArgs.Empty);
     }
 

@@ -26,6 +26,7 @@ public class OverviewViewModel : ViewModelBase
 {
     private readonly ILocalDataStore _store;
     private readonly ISyncService _syncService;
+    private readonly ICloudSyncCoordinator? _syncCoordinator;
 
     public ObservableCollection<Account> Accounts { get; } = new();
     public ObservableCollection<Transaction> RecentTransactions { get; } = new();
@@ -38,6 +39,13 @@ public class OverviewViewModel : ViewModelBase
     {
         get => _totalBalance;
         set => SetProperty(ref _totalBalance, value);
+    }
+
+    private Money _availableBalance = Money.Zero("USD");
+    public Money AvailableBalance
+    {
+        get => _availableBalance;
+        set => SetProperty(ref _availableBalance, value);
     }
 
     private Money _monthlyIncome = Money.Zero("USD");
@@ -70,14 +78,33 @@ public class OverviewViewModel : ViewModelBase
 
     public string RefreshTooltip => LocalizationService.Current.GetString("Overview_RefreshButton_Tooltip");
 
+    public bool IsSyncing => _syncCoordinator?.IsSyncing ?? false;
+    public bool IsNotSyncing => !IsSyncing;
+
+    private string? _syncErrorMessage;
+    public string? SyncErrorMessage
+    {
+        get => _syncErrorMessage;
+        set
+        {
+            if (SetProperty(ref _syncErrorMessage, value))
+            {
+                OnPropertyChanged(nameof(HasSyncError));
+            }
+        }
+    }
+
+    public bool HasSyncError => !string.IsNullOrEmpty(SyncErrorMessage);
+
     public IAsyncRelayCommand RefreshCommand { get; }
 
-    public OverviewViewModel(ILocalDataStore store, ISyncService syncService)
+    public OverviewViewModel(ILocalDataStore store, ISyncService syncService, ICloudSyncCoordinator? syncCoordinator = null)
     {
         _store = store;
         _syncService = syncService;
+        _syncCoordinator = syncCoordinator;
 
-        RefreshCommand = new AsyncRelayCommand(LoadDataAsync);
+        RefreshCommand = new AsyncRelayCommand(PerformSyncAndRefreshAsync);
         _store.DataChanged += (s, e) => _ = LoadDataAsync();
         LocalizationService.Current.LanguageChanged += (s, e) =>
         {
@@ -85,6 +112,51 @@ public class OverviewViewModel : ViewModelBase
             OnPropertyChanged(nameof(RefreshTooltip));
             _ = LoadDataAsync();
         };
+
+        if (_syncCoordinator != null)
+        {
+            _syncCoordinator.StateChanged += (s, state) =>
+            {
+                OnPropertyChanged(nameof(IsSyncing));
+                OnPropertyChanged(nameof(IsNotSyncing));
+            };
+        }
+    }
+
+    public async Task PerformSyncAndRefreshAsync()
+    {
+        if (IsSyncing) return;
+
+        SyncErrorMessage = null;
+        IsBusy = true;
+        try
+        {
+            if (_syncCoordinator != null)
+            {
+                var result = await _syncCoordinator.SyncAsync(SyncTrigger.Manual);
+                if (!result.IsSuccess)
+                {
+                    SyncErrorMessage = result.ErrorMessage ?? "Synchronization failed";
+                }
+            }
+            else
+            {
+                var result = await _syncService.PerformFullSyncAsync();
+                if (!result.IsSuccess)
+                {
+                    SyncErrorMessage = result.ErrorMessage ?? "Synchronization failed";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            SyncErrorMessage = ex.Message;
+        }
+        finally
+        {
+            await LoadDataAsync();
+            IsBusy = false;
+        }
     }
 
     public async Task LoadDataAsync()
@@ -93,18 +165,23 @@ public class OverviewViewModel : ViewModelBase
         try
         {
             var settings = await _store.GetSettingsAsync();
-            string baseCurrency = string.IsNullOrWhiteSpace(settings.BaseCurrencyCode) ? "EUR" : settings.BaseCurrencyCode;
+            string baseCurrency = string.IsNullOrWhiteSpace(settings.BaseCurrencyCode) ? "USD" : settings.BaseCurrencyCode;
 
             // 1. Accounts
             var allAccounts = await _store.GetAccountsAsync();
             Accounts.Clear();
             long totalBalanceMinor = 0;
+            long totalAvailableMinor = 0;
             foreach (var acc in allAccounts)
             {
                 Accounts.Add(acc);
-                totalBalanceMinor += acc.Balance.AmountMinor;
+                var convertedBalance = CurrencyConfig.Convert(acc.Balance, baseCurrency);
+                var convertedAvailable = CurrencyConfig.Convert(acc.AvailableBalance, baseCurrency);
+                totalBalanceMinor += convertedBalance.AmountMinor;
+                totalAvailableMinor += convertedAvailable.AmountMinor;
             }
             TotalBalance = new Money(totalBalanceMinor, baseCurrency);
+            AvailableBalance = new Money(totalAvailableMinor, baseCurrency);
 
             // 2. Transactions & Cash Flow
             var allTx = await _store.GetTransactionsAsync();
@@ -118,13 +195,21 @@ public class OverviewViewModel : ViewModelBase
             long startOfMonth = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
 
             var currentMonthTx = allTx.Where(t => t.Timestamp >= startOfMonth).ToList();
-            long incomeMinor = currentMonthTx
-                .Where(t => t.Type == TransactionType.INCOME || t.Type == TransactionType.REFUND)
-                .Sum(t => t.Amount.AmountMinor);
+            long incomeMinor = 0;
+            long expenseMinor = 0;
 
-            long expenseMinor = currentMonthTx
-                .Where(t => t.Type == TransactionType.EXPENSE)
-                .Sum(t => t.Amount.AmountMinor);
+            foreach (var t in currentMonthTx)
+            {
+                var convertedAmount = CurrencyConfig.Convert(t.Amount, baseCurrency);
+                if (t.Type == TransactionType.INCOME || t.Type == TransactionType.REFUND)
+                {
+                    incomeMinor += convertedAmount.AmountMinor;
+                }
+                else if (t.Type == TransactionType.EXPENSE)
+                {
+                    expenseMinor += convertedAmount.AmountMinor;
+                }
+            }
 
             MonthlyIncome = new Money(incomeMinor, baseCurrency);
             MonthlyExpense = new Money(expenseMinor, baseCurrency);
@@ -170,8 +255,12 @@ public class OverviewViewModel : ViewModelBase
             var end = new DateTimeOffset(targetMonth.Year, targetMonth.Month, DateTime.DaysInMonth(targetMonth.Year, targetMonth.Month), 23, 59, 59, TimeSpan.Zero).ToUnixTimeMilliseconds();
 
             var monthTx = allTx.Where(t => t.Timestamp >= start && t.Timestamp <= end).ToList();
-            decimal inc = monthTx.Where(t => t.Type == TransactionType.INCOME).Sum(t => t.Amount.AmountDecimal);
-            decimal exp = monthTx.Where(t => t.Type == TransactionType.EXPENSE).Sum(t => t.Amount.AmountDecimal);
+            decimal inc = monthTx
+                .Where(t => t.Type == TransactionType.INCOME || t.Type == TransactionType.REFUND)
+                .Sum(t => CurrencyConfig.Convert(t.Amount, currency).AmountDecimal);
+            decimal exp = monthTx
+                .Where(t => t.Type == TransactionType.EXPENSE)
+                .Sum(t => CurrencyConfig.Convert(t.Amount, currency).AmountDecimal);
 
             if (inc > maxVal) maxVal = inc;
             if (exp > maxVal) maxVal = exp;

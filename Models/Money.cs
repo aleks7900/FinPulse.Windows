@@ -59,6 +59,8 @@ public readonly struct Money : IComparable<Money>, IEquatable<Money>
 
     public Money Absolute() => new(Math.Abs(AmountMinor), CurrencyCode);
 
+    public Money ConvertTo(string targetCurrency) => CurrencyConfig.Convert(this, targetCurrency);
+
     public string Formatted() => CurrencyConfig.Format(this, null);
 
     public string Formatted(CultureInfo? culture) => CurrencyConfig.Format(this, culture);

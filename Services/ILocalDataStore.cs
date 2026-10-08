@@ -63,6 +63,7 @@ public interface ILocalDataStore
     // Settings
     Task<CloudSettings> GetSettingsAsync();
     Task SaveSettingsAsync(CloudSettings settings, bool markForSync = true);
+    Task RecalculateBaseCurrencyAsync(string newCurrencyCode);
     Task<SyncPreferences> GetSyncPreferencesAsync();
     Task SaveSyncPreferencesAsync(SyncPreferences preferences);
 

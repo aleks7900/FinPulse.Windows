@@ -93,10 +93,28 @@ public class LocalizationService : ILocalizationService
             }
             catch { }
 
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InstalledUICulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InstalledUICulture;
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InstalledUICulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
+            CultureInfo systemCulture;
+            try
+            {
+                var prefLang = global::Windows.System.UserProfile.GlobalizationPreferences.Languages?.FirstOrDefault()
+                               ?? ApplicationLanguages.Languages?.FirstOrDefault();
+                systemCulture = !string.IsNullOrWhiteSpace(prefLang)
+                    ? new CultureInfo(prefLang)
+                    : CultureInfo.InstalledUICulture;
+            }
+            catch
+            {
+                systemCulture = CultureInfo.InstalledUICulture;
+            }
+
+            try
+            {
+                CultureInfo.DefaultThreadCurrentCulture = systemCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = systemCulture;
+                Thread.CurrentThread.CurrentCulture = systemCulture;
+                Thread.CurrentThread.CurrentUICulture = systemCulture;
+            }
+            catch { }
         }
         else
         {
@@ -178,12 +196,20 @@ public class LocalizationService : ILocalizationService
         }
     }
 
-    private string GetEffectiveLanguageCode()
+    public string GetEffectiveLanguageCode()
     {
         if (_currentLanguage != "SYSTEM" && !string.IsNullOrWhiteSpace(_currentLanguage))
             return _currentLanguage;
 
-        string sysLang = CultureInfo.CurrentUICulture.Name;
+        string? prefLang = null;
+        try
+        {
+            prefLang = global::Windows.System.UserProfile.GlobalizationPreferences.Languages?.FirstOrDefault()
+                       ?? ApplicationLanguages.Languages?.FirstOrDefault();
+        }
+        catch { }
+
+        string sysLang = !string.IsNullOrWhiteSpace(prefLang) ? prefLang : CultureInfo.CurrentUICulture.Name;
         // Match exact or prefix (e.g. de -> de-DE, uk -> uk-UA)
         string? match = KnownLanguageCodes.FirstOrDefault(code => code.Equals(sysLang, StringComparison.OrdinalIgnoreCase))
                      ?? KnownLanguageCodes.FirstOrDefault(code => sysLang.StartsWith(code[..2], StringComparison.OrdinalIgnoreCase));

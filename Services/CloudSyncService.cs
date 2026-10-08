@@ -181,23 +181,36 @@ public class CloudSyncService : ISyncService, IDisposable
             return new SyncResult { IsSuccess = false, ErrorMessage = "Network is offline" };
         }
 
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(45));
+
         // Single-flight lock: prevent multiple synchronization runs from corrupting state
-        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            await _syncLock.WaitAsync(timeoutCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            LastErrorMessage = cancellationToken.IsCancellationRequested ? "Sync operation cancelled" : "Sync operation timed out";
+            SetStatus(SyncStatus.ERROR);
+            return new SyncResult { IsSuccess = false, ErrorMessage = LastErrorMessage };
+        }
+
         try
         {
             SetStatus(SyncStatus.SYNCING);
             Debug.WriteLine($"[CloudSync] === Sync START === Trigger: FullSync, UID: {user.Uid}, LastSync: {LastSyncTimestamp}");
 
             // Step 1: PUSH local pending changes in safe dependency order
-            var uploadRes = await UploadPendingChangesInternalAsync(user.Uid, cancellationToken);
+            var uploadRes = await UploadPendingChangesInternalAsync(user.Uid, timeoutCts.Token);
             Debug.WriteLine($"[CloudSync] Step 1 PUSH completed: Uploaded={uploadRes.UploadedCount}, Deleted={uploadRes.DeletedCount}");
 
             // Step 2: PULL remote changes in safe dependency order and reconcile per-entity (LWW)
-            var downloadRes = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp, cancellationToken);
+            var downloadRes = await DownloadRemoteChangesInternalAsync(user.Uid, LastSyncTimestamp, timeoutCts.Token);
             Debug.WriteLine($"[CloudSync] Step 2 PULL completed: Downloaded={downloadRes.DownloadedCount}, Deleted={downloadRes.DeletedCount}, ConflictsResolved={downloadRes.ConflictsResolvedCount}");
 
             // Step 3: Reconcile Settings
-            await SyncSettingsInternalAsync(user.Uid, cancellationToken);
+            await SyncSettingsInternalAsync(user.Uid, timeoutCts.Token);
             Debug.WriteLine($"[CloudSync] Step 3 Settings reconciliation completed.");
 
             long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -224,7 +237,9 @@ public class CloudSyncService : ISyncService, IDisposable
         catch (OperationCanceledException)
         {
             Debug.WriteLine($"[CloudSync] === Sync CANCELLED === UID: {user.Uid}");
-            return new SyncResult { IsSuccess = false, ErrorMessage = "Sync operation cancelled" };
+            LastErrorMessage = cancellationToken.IsCancellationRequested ? "Sync operation cancelled" : "Sync operation timed out";
+            SetStatus(SyncStatus.ERROR);
+            return new SyncResult { IsSuccess = false, ErrorMessage = LastErrorMessage };
         }
         catch (Exception ex)
         {
@@ -235,6 +250,10 @@ public class CloudSyncService : ISyncService, IDisposable
         }
         finally
         {
+            if (CurrentStatus == SyncStatus.SYNCING)
+            {
+                SetStatus(SyncStatus.ERROR);
+            }
             _syncLock.Release();
         }
     }
@@ -393,6 +412,7 @@ public class CloudSyncService : ISyncService, IDisposable
         int downloaded = 0;
         int deleted = 0;
         int conflictsResolved = 0;
+        var downloadedAccounts = new Dictionary<string, long>();
 
         // Download and reconcile in strict dependency order
         foreach (var collection in PullOrder)
@@ -417,10 +437,50 @@ public class CloudSyncService : ISyncService, IDisposable
                 var localTombstone = await _localStore.GetTombstoneAsync(entityType, rec.Id);
                 long? localUpdatedAt = await _localStore.GetEntityUpdatedAtAsync(entityType, rec.Id);
 
+                // Determine whether a transaction should adjust account balance
+                bool shouldAdjustBalance = true;
+                if (collection == "accounts" && !rec.IsDeleted)
+                {
+                    downloadedAccounts[rec.Id] = rec.UpdatedAt;
+                }
+                else if (collection == "transactions" && !rec.IsDeleted && !string.IsNullOrWhiteSpace(rec.JsonPayload))
+                {
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(rec.JsonPayload);
+                        if (doc.RootElement.TryGetProperty("sourceAccountId", out var srcProp) ||
+                            doc.RootElement.TryGetProperty("SourceAccountId", out srcProp))
+                        {
+                            string? srcAccId = srcProp.GetString();
+                            if (!string.IsNullOrEmpty(srcAccId) && downloadedAccounts.TryGetValue(srcAccId, out long accUpdatedAt))
+                            {
+                                if (accUpdatedAt >= rec.UpdatedAt)
+                                {
+                                    shouldAdjustBalance = false;
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
                 if (rec.IsDeleted)
                 {
                     // REMOTE TOMBSTONE
                     long remoteDeletedAt = rec.DeletedAt ?? rec.UpdatedAt;
+
+                    bool tombstoneAdjustBalance = true;
+                    if (collection == "transactions")
+                    {
+                        var existingTx = await _localStore.GetTransactionByIdAsync(rec.Id);
+                        if (existingTx != null && downloadedAccounts.TryGetValue(existingTx.SourceAccountId, out long accUpdatedAt))
+                        {
+                            if (accUpdatedAt >= remoteDeletedAt)
+                            {
+                                tombstoneAdjustBalance = false;
+                            }
+                        }
+                    }
 
                     if (localUpdatedAt.HasValue)
                     {
@@ -428,7 +488,7 @@ public class CloudSyncService : ISyncService, IDisposable
                         {
                             // Remote deletion is newer or equal -> Remote deletion wins
                             Debug.WriteLine($"[CloudSync] DELETE {entityType} {rec.Id}: remote tombstone newer (remote={remoteDeletedAt} >= local={localUpdatedAt.Value})");
-                            await DeleteEntityLocallyAsync(collection, rec.Id, adjustBalance: false);
+                            await DeleteEntityLocallyAsync(collection, rec.Id, adjustBalance: tombstoneAdjustBalance);
                             await _localStore.RecordTombstoneAsync(entityType, rec.Id, remoteDeletedAt, markForSync: false);
                             deleted++;
                         }
@@ -443,7 +503,8 @@ public class CloudSyncService : ISyncService, IDisposable
                     }
                     else
                     {
-                        // Entity is not present locally; record tombstone metadata if needed
+                        // Entity is not present locally; record tombstone metadata and ensure cleanly purged
+                        await DeleteEntityLocallyAsync(collection, rec.Id, adjustBalance: false);
                         await _localStore.RecordTombstoneAsync(entityType, rec.Id, remoteDeletedAt, markForSync: false);
                     }
                 }
@@ -467,7 +528,7 @@ public class CloudSyncService : ISyncService, IDisposable
                             await _localStore.ClearTombstoneAsync(entityType, rec.Id);
                             if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
                             {
-                                await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: false);
+                                await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: shouldAdjustBalance);
                                 downloaded++;
                             }
                             conflictsResolved++;
@@ -481,7 +542,7 @@ public class CloudSyncService : ISyncService, IDisposable
                             Debug.WriteLine($"[CloudSync] PULL {entityType} {rec.Id}: remote newer (remote={rec.UpdatedAt} > local={localUpdatedAt.Value})");
                             if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
                             {
-                                await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: false);
+                                await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: shouldAdjustBalance);
                                 await _localStore.RemoveFromSyncQueueAsync(entityType, rec.Id);
                                 downloaded++;
                             }
@@ -505,7 +566,7 @@ public class CloudSyncService : ISyncService, IDisposable
                         Debug.WriteLine($"[CloudSync] PULL_NEW {entityType} {rec.Id}: remote only ({rec.UpdatedAt})");
                         if (!string.IsNullOrWhiteSpace(rec.JsonPayload))
                         {
-                            await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: false);
+                            await UpsertEntityLocallyAsync(collection, rec.JsonPayload, adjustBalance: shouldAdjustBalance);
                             downloaded++;
                         }
                     }

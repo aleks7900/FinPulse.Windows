@@ -13,10 +13,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="App_Title" xml:space="preserve">
-    <value>FinPulse Супутник</value>
+    <value>FinPulse Компаньйон</value>
   </data>
   <data name="AppTitleBar.Title" xml:space="preserve">
-    <value>FinPulse Супутник</value>
+    <value>FinPulse Компаньйон</value>
   </data>
   <data name="AppTitleBar.Subtitle" xml:space="preserve">
     <value>Випуск Windows 11</value>
@@ -166,7 +166,7 @@
     <value>У межах норми</value>
   </data>
   <data name="Overview_HeaderTitle.Text" xml:space="preserve">
-    <value>FinPulse Супутник</value>
+    <value>FinPulse Компаньйон</value>
   </data>
   <data name="Overview_HeaderSubtitle.Text" xml:space="preserve">
     <value>Фінансовий стан у реальному часі, синхронізований з FinPulse Cloud</value>
@@ -805,10 +805,10 @@
     <value>ОЧІКУЮТЬ ВІДПРАВКИ</value>
   </data>
   <data name="Settings_Sync_Description.Text" xml:space="preserve">
-    <value>FinPulse Супутник синхронізується з проєктом Google Cloud Firestore 'finpulse-cloud' за допомогою двостороннього вирішення конфліктів Last-Write-Wins.</value>
+    <value>FinPulse Компаньйон синхронізується з проєктом Google Cloud Firestore 'finpulse-cloud' за допомогою двостороннього вирішення конфліктів Last-Write-Wins.</value>
   </data>
   <data name="Settings_About_AppName.Text" xml:space="preserve">
-    <value>FinPulse Супутник</value>
+    <value>FinPulse Компаньйон</value>
   </data>
   <data name="Settings_About_Version.Text" xml:space="preserve">
     <value>Версія 1.0.0 • Windows 11 Fluent Edition</value>
